@@ -1,0 +1,116 @@
+<mujoco model="unnamed_model">
+  <compiler autolimits="true" angle="radian"/>
+  <option integrator="implicitfast"/>
+  <default>
+    <default class="/"/>
+    <default class="xarm5/">
+      <default class="xarm5/xarm5">
+        <joint axis="0 0 1" range="-6.2831900000000003 6.2831900000000003" armature="0.10000000000000001" frictionloss="1"/>
+        <geom type="mesh" material="xarm5/white"/>
+        <general ctrlrange="-6.2831900000000003 6.2831900000000003" biastype="affine"/>
+        <default class="xarm5/size1">
+          <joint damping="10"/>
+          <general forcerange="-50 50" gainprm="1500" biasprm="0 -1500 -150"/>
+        </default>
+        <default class="xarm5/size2">
+          <joint damping="5"/>
+          <general forcerange="-30 30" gainprm="1000" biasprm="0 -1000 -100"/>
+        </default>
+        <default class="xarm5/size3">
+          <joint damping="2"/>
+          <general forcerange="-20 20" gainprm="800" biasprm="0 -800 -80"/>
+        </default>
+        <default class="xarm5/visual">
+          <geom type="mesh" contype="0" conaffinity="0" group="2"/>
+        </default>
+        <default class="xarm5/collision">
+          <geom type="mesh" group="3"/>
+        </default>
+      </default>
+    </default>
+  </default>
+  <asset>
+    <material name="xarm5/white" class="xarm5/" rgba="1 1 1 1"/>
+    <material name="xarm5/gray" class="xarm5/" rgba="0.753 0.753 0.753 1"/>
+    <mesh name="xarm5/xArm5(XF1305)_0" class="xarm5/" file="xArm5(XF1305)_0-ef7c4ff5d08cd2c7b950a22a993befad1137bf6e.obj"/>
+    <mesh name="xarm5/xArm5(XF1305)_1" class="xarm5/" file="xArm5(XF1305)_1-d2656f2b6410b7e848246a219c3fbfab7183647f.obj"/>
+    <mesh name="xarm5/xArm5(XF1305)_2" class="xarm5/" file="xArm5(XF1305)_2-b7fb1f37f889f433ccc41e48e38efca63e46dac7.obj"/>
+    <mesh name="xarm5/xArm5(XF1305)_3" class="xarm5/" file="xArm5(XF1305)_3-c2a67851ee1f2af3b0fa72c424b8acfe6b99370f.obj"/>
+    <mesh name="xarm5/xArm5(XF1305)_4" class="xarm5/" file="xArm5(XF1305)_4-e281d84f4cfef31fec2ed051d729fc8cbcabe7d7.obj"/>
+    <mesh name="xarm5/xArm5(XF1305)_5" class="xarm5/" file="xArm5(XF1305)_5-c5535326c666a0da56b4554957cab7367dedd5bf.obj"/>
+    <mesh name="xarm5/xArm5(XF1305)_6" class="xarm5/" file="xArm5(XF1305)_6-cfabcb99e7b0c46af4768f2132be23281ca13164.obj"/>
+    <mesh name="xarm5/xArm5(XF1305)_7" class="xarm5/" file="xArm5(XF1305)_7-ec403be71ede3e14f0ee37b1b6bdc2f1fe56266d.obj"/>
+    <mesh name="xarm5/xArm5(XF1305)_8" class="xarm5/" file="xArm5(XF1305)_8-1493544a383c640058085fbf35630d7ac0287e27.obj"/>
+    <mesh name="xarm5/xArm5(XF1305)_9" class="xarm5/" file="xArm5(XF1305)_9-5dddefbd2d3146110500bf5d6623bbec3fcdb1bd.obj"/>
+    <mesh name="xarm5/xArm5(XF1305)_10" class="xarm5/" file="xArm5(XF1305)_10-14ae7c34b3d4450a087090e80c8fd4b8eddd07e5.obj"/>
+    <mesh name="xarm5/xArm5(XF1305)_11" class="xarm5/" file="xArm5(XF1305)_11-59803ba1909c46c40f3de86c27dcdf9b6b43cb80.obj"/>
+    <mesh name="xarm5/xArm5(XF1305)_12" class="xarm5/" file="xArm5(XF1305)_12-18eeaabea2b3a39d3913874f8f9c598eaf4a11be.obj"/>
+    <mesh name="xarm5/xArm5(XF1305)_13" class="xarm5/" file="xArm5(XF1305)_13-5ce3e32a3f73750b614bb5d4ce12e8d327a06e82.obj"/>
+  </asset>
+  <worldbody>
+    <body name="xarm5/">
+      <body name="xarm5/link_base" childclass="xarm5/xarm5" pos="0 0 0">
+        <inertial pos="0 0 0.050000000000000003" mass="0.80000000000000004" diaginertia="0.0030000000000000001 0.0030000000000000001 0.0015"/>
+        <geom name="xarm5//unnamed_geom_0" class="xarm5/visual" mesh="xarm5/xArm5(XF1305)_0"/>
+        <geom name="xarm5//unnamed_geom_1" class="xarm5/visual" mesh="xarm5/xArm5(XF1305)_1"/>
+        <geom name="xarm5//unnamed_geom_2" class="xarm5/collision" mesh="xarm5/xArm5(XF1305)_0"/>
+        <geom name="xarm5//unnamed_geom_3" class="xarm5/collision" mesh="xarm5/xArm5(XF1305)_1"/>
+        <body name="xarm5/link1" pos="0 0 0.26700000000000002">
+          <inertial pos="0 0.02 -0.01" mass="2" diaginertia="0.0050000000000000001 0.0050000000000000001 0.0030000000000000001"/>
+          <joint name="xarm5/joint1" class="xarm5/size1"/>
+          <geom name="xarm5//unnamed_geom_4" class="xarm5/visual" mesh="xarm5/xArm5(XF1305)_2"/>
+          <geom name="xarm5//unnamed_geom_5" class="xarm5/visual" mesh="xarm5/xArm5(XF1305)_3"/>
+          <geom name="xarm5//unnamed_geom_6" class="xarm5/collision" mesh="xarm5/xArm5(XF1305)_2"/>
+          <geom name="xarm5//unnamed_geom_7" class="xarm5/collision" mesh="xarm5/xArm5(XF1305)_3"/>
+          <body name="xarm5/link2" quat="1 -1 0 0">
+            <inertial pos="0 -0.12 0.017000000000000001" mass="1.6000000000000001" diaginertia="0.0089999999999999993 0.0089999999999999993 0.002"/>
+            <joint name="xarm5/joint2" class="xarm5/size1" range="-2.0590000000000002 2.0943999999999998"/>
+            <geom name="xarm5//unnamed_geom_8" class="xarm5/visual" mesh="xarm5/xArm5(XF1305)_4"/>
+            <geom name="xarm5//unnamed_geom_9" class="xarm5/visual" mesh="xarm5/xArm5(XF1305)_5"/>
+            <geom name="xarm5//unnamed_geom_10" class="xarm5/collision" mesh="xarm5/xArm5(XF1305)_4"/>
+            <geom name="xarm5//unnamed_geom_11" class="xarm5/collision" mesh="xarm5/xArm5(XF1305)_5"/>
+            <body name="xarm5/link3" pos="0 -0.29299999999999998 0" quat="1 1 0 0">
+              <inertial pos="0.044999999999999998 -0.025000000000000001 -0.0080000000000000002" mass="1.3999999999999999" diaginertia="0.0035000000000000001 0.0030000000000000001 0.002"/>
+              <joint name="xarm5/joint3" class="xarm5/size2"/>
+              <geom name="xarm5//unnamed_geom_12" class="xarm5/visual" mesh="xarm5/xArm5(XF1305)_6"/>
+              <geom name="xarm5//unnamed_geom_13" class="xarm5/visual" mesh="xarm5/xArm5(XF1305)_7"/>
+              <geom name="xarm5//unnamed_geom_14" class="xarm5/collision" mesh="xarm5/xArm5(XF1305)_6"/>
+              <geom name="xarm5//unnamed_geom_15" class="xarm5/collision" mesh="xarm5/xArm5(XF1305)_7"/>
+              <body name="xarm5/link4" pos="0.052499999999999998 0 0" quat="1 1 0 0">
+                <inertial pos="0.070000000000000007 -0.115 0.012" mass="1.5" diaginertia="0.0060000000000000001 0.0060000000000000001 0.002"/>
+                <joint name="xarm5/joint4" class="xarm5/size2" range="-0.19198000000000001 3.927"/>
+                <geom name="xarm5//unnamed_geom_16" class="xarm5/visual" mesh="xarm5/xArm5(XF1305)_8"/>
+                <geom name="xarm5//unnamed_geom_17" class="xarm5/visual" mesh="xarm5/xArm5(XF1305)_9"/>
+                <geom name="xarm5//unnamed_geom_18" class="xarm5/collision" mesh="xarm5/xArm5(XF1305)_8"/>
+                <geom name="xarm5//unnamed_geom_19" class="xarm5/collision" mesh="xarm5/xArm5(XF1305)_9"/>
+                <body name="xarm5/link5" pos="0.077499999999999999 -0.34250000000000003 0" quat="1 1 0 0">
+                  <inertial pos="0 0.014999999999999999 -0.025000000000000001" mass="1" diaginertia="0.0050000000000000001 0.0050000000000000001 0.001"/>
+                  <joint name="xarm5/joint5" class="xarm5/size3"/>
+                  <geom name="xarm5//unnamed_geom_20" class="xarm5/visual" mesh="xarm5/xArm5(XF1305)_10"/>
+                  <geom name="xarm5//unnamed_geom_21" class="xarm5/visual" mesh="xarm5/xArm5(XF1305)_11"/>
+                  <geom name="xarm5//unnamed_geom_22" class="xarm5/visual" mesh="xarm5/xArm5(XF1305)_12"/>
+                  <geom name="xarm5//unnamed_geom_23" class="xarm5/visual" mesh="xarm5/xArm5(XF1305)_13"/>
+                  <geom name="xarm5//unnamed_geom_24" class="xarm5/collision" mesh="xarm5/xArm5(XF1305)_10"/>
+                  <geom name="xarm5//unnamed_geom_25" class="xarm5/collision" mesh="xarm5/xArm5(XF1305)_11"/>
+                  <geom name="xarm5//unnamed_geom_26" class="xarm5/collision" mesh="xarm5/xArm5(XF1305)_12"/>
+                  <geom name="xarm5//unnamed_geom_27" class="xarm5/collision" mesh="xarm5/xArm5(XF1305)_13"/>
+                  <site name="xarm5/link_tcp" pos="0 0 0.14999999999999999"/>
+                </body>
+              </body>
+            </body>
+          </body>
+        </body>
+      </body>
+    </body>
+  </worldbody>
+  <actuator>
+    <general name="xarm5/act1" class="xarm5/size1" joint="xarm5/joint1"/>
+    <general name="xarm5/act2" class="xarm5/size1" ctrlrange="-2.0590000000000002 2.0943999999999998" joint="xarm5/joint2"/>
+    <general name="xarm5/act3" class="xarm5/size2" joint="xarm5/joint3"/>
+    <general name="xarm5/act4" class="xarm5/size2" ctrlrange="-0.19198000000000001 3.927" joint="xarm5/joint4"/>
+    <general name="xarm5/act5" class="xarm5/size3" joint="xarm5/joint5"/>
+  </actuator>
+  <keyframe>
+    <key name="xarm5/home" qpos="0 -0.247 0 0.90900000000000003 0" ctrl="0 -0.247 0 0.90900000000000003 0"/>
+  </keyframe>
+</mujoco>
