@@ -10,7 +10,7 @@ from gello.zmq_core.camera_node import ZMQClientCamera
 @dataclass
 class Args:
     ports: Tuple[int, ...] = (5000, 5001)
-    hostname: str = "192.168.123.48"
+    hostname: str = "192.168.123.50"
     #hostname: str = "192.168.123.3"
 
 
