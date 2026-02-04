@@ -71,27 +71,26 @@
         <geom name="xarm5//unnamed_geom_0" mesh="xarm5/link_base"/>
         <body name="xarm5/link1" pos="0 -0.0035000000000000001 0.151">
           <inertial pos="-0.00020000000000000001 0.029049999999999999 -0.012330000000000001" quat="0.97895299999999996 -0.202769 -0.0044161699999999996 -0.022726400000000001" mass="2.3820000000000001" diaginertia="0.00569127 0.0053338400000000003 0.0029386500000000001"/>
-          <joint name="xarm5/joint1" class="xarm5/size1"/>
+          <joint name="xarm5/joint1" class="xarm5/size1" pos="0 0.001 0"/>
           <geom name="xarm5//unnamed_geom_1" mesh="xarm5/link1"/>
-          <body name="xarm5/link2" pos="-0.0070000000000000001 0.025000000000000001 0.068500000000000005">
-            <inertial pos="0.00022000000000000001 -0.12856000000000001 0.017350000000000001" quat="0.50197999999999998 0.86482999999999999 -0.00778841 0.0048328499999999996" mass="1.869" diaginertia="0.00959898 0.0093771700000000006 0.00201315"/>
-            <joint name="xarm5/joint2" class="xarm5/size1" range="-2.0590000000000002 2.0943999999999998"/>
+          <body name="xarm5/link2" pos="-0.0060000000000000001 0.044999999999999998 0.068500000000000005">
+            <joint name="xarm5/joint2" class="xarm5/size1" pos="0.0064999999999999997 0 0.049000000000000002" axis="0 1 0" range="-2.0590000000000002 2.0943999999999998"/>
             <geom name="xarm5//unnamed_geom_2" mesh="xarm5/link2"/>
             <body name="xarm5/link3" pos="0.088999999999999996 -0.0050000000000000001 0.17000000000000001">
               <inertial pos="0.046600000000000003 -0.024629999999999999 -0.0076800000000000002" quat="0.91381900000000005 0.289775 0.28148099999999998 -0.041645500000000002" mass="1.6383000000000001" diaginertia="0.0035172100000000002 0.0029408899999999998 0.00195868"/>
-              <joint name="xarm5/joint3" class="xarm5/size2"/>
+              <joint name="xarm5/joint3" class="xarm5/size2" pos="-0.029999999999999999 -0.01 0.16300000000000001" axis="0 1 0"/>
               <geom name="xarm5//unnamed_geom_3" mesh="xarm5/link3"/>
               <body name="xarm5/link4" pos="0.049000000000000002 -0.055 -0.219">
                 <inertial pos="0.070470000000000005 -0.11575000000000001 0.012" quat="0.42210799999999998 0.85202599999999995 -0.126025 0.28283199999999997" mass="1.7269000000000001" diaginertia="0.00657137 0.0064794800000000001 0.0018676299999999999"/>
-                <joint name="xarm5/joint4" class="xarm5/size2" range="-0.19198000000000001 3.927"/>
+                <joint name="xarm5/joint4" class="xarm5/size3" pos="0 0.02 0.25" axis="0 0 -1" range="-0.19198000000000001 3.927"/>
                 <geom name="xarm5//unnamed_geom_4" mesh="xarm5/link4"/>
                 <body name="xarm5/link5" pos="0.029999999999999999 0.028000000000000001 0">
                   <inertial pos="-0.00032000000000000003 0.016039999999999999 -0.025999999999999999" quat="0.99931099999999995 -0.030445699999999999 0.00057706700000000001 0.0212082" mass="1.3203" diaginertia="0.0053472900000000002 0.0049907600000000003 0.0013489000000000001"/>
-                  <joint name="xarm5/joint5" class="xarm5/size2"/>
+                  <joint name="xarm5/joint5" class="xarm5/size3" pos="-0.029999999999999999 -0.014999999999999999 0.036999999999999998" axis="0 1 0"/>
                   <geom name="xarm5//unnamed_geom_5" mesh="xarm5/link5"/>
                   <body name="xarm5/link6" pos="0.045999999999999999 0 -0.056000000000000001">
                     <inertial pos="0.064689999999999998 0.032779999999999997 0.021409999999999998" quat="-0.217672 0.77241899999999997 0.16258 0.57406900000000005" mass="1.325" diaginertia="0.0024542100000000001 0.00221646 0.00107273"/>
-                    <joint name="xarm5/joint6" class="xarm5/size3" range="-1.6929700000000001 3.1415899999999999"/>
+                    <joint name="xarm5/joint6" class="xarm5/size3" pos="0.00029999999999999997 -0.0070000000000000001 0" axis="0 0 -1" range="-1.6929700000000001 3.1415899999999999"/>
                     <geom name="xarm5//unnamed_geom_6" mesh="xarm5/link6"/>
                     <body name="xarm5/xarm_gripper_base_link" pos="0 -0.0070000000000000001 0" euler="0 3.1415899999999999 0">
                       <inertial pos="-0.00065488999999999999 -0.0018496999999999999 0.048028000000000001" quat="0.99740300000000004 -0.071751200000000001 -0.0061836 0.000477479" mass="0.54156000000000004" diaginertia="0.00047109300000000001 0.000332307 0.000254799"/>
@@ -159,10 +158,10 @@
     </fixed>
   </tendon>
   <actuator>
-    <general name="xarm5/act1" class="xarm5/size1" joint="xarm5/joint1"/>
+    <general name="xarm5/act1" class="xarm5/size1" ctrlrange="-3.1415000000000002 3.1415000000000002" joint="xarm5/joint1"/>
     <general name="xarm5/act2" class="xarm5/size1" ctrlrange="-2.0590000000000002 2.0943999999999998" joint="xarm5/joint2"/>
-    <general name="xarm5/act3" class="xarm5/size2" ctrlrange="-0.19198000000000001 3.927" joint="xarm5/joint3"/>
-    <general name="xarm5/act4" class="xarm5/size2" joint="xarm5/joint4"/>
+    <general name="xarm5/act3" class="xarm5/size2" ctrlrange="-3.927 0.19198000000000001" joint="xarm5/joint3"/>
+    <general name="xarm5/act4" class="xarm5/size2" ctrlrange="-0.19198000000000001 3.927" joint="xarm5/joint4"/>
     <general name="xarm5/act5" class="xarm5/size3" ctrlrange="-1.6929700000000001 3.1415899999999999" joint="xarm5/joint5"/>
     <general name="xarm5/gripper" class="xarm5/" ctrlrange="0 255" forcerange="-50 50" tendon="xarm5/split" biastype="affine" gainprm="0.33300000000000002" biasprm="0 -100 -10"/>
   </actuator>
