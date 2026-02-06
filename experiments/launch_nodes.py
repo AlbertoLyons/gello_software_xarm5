@@ -27,6 +27,18 @@ def launch_robot_server(args: Args):
             xml_path=xml, gripper_xml_path=gripper_xml, port=port, host=args.hostname
         )
         server.serve()
+    elif args.robot == "sim_xarm_no_arm":
+        from gello.robots.sim_robot import MujocoRobotServer
+
+        MENAGERIE_ROOT: Path = (
+            Path(__file__).parent.parent / "mujoco_menagerie"
+        )
+        xml = MENAGERIE_ROOT / "ufactory_xarm5" / "xarm5_noarm.xml"
+        gripper_xml = None
+        server = MujocoRobotServer(
+            xml_path=xml, gripper_xml_path=gripper_xml, port=port, host=args.hostname
+        )
+        server.serve()
 
     else:
         if args.robot == "xarm":
