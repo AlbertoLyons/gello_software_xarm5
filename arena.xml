@@ -108,6 +108,6 @@
     <general name="xarm5/act5" class="xarm5/size3" joint="xarm5/joint5"/>
   </actuator>
   <keyframe>
-    <key name="xarm5/home" qpos="0 0 0 0 0" ctrl="0 0 0 0"/>
+    <key name="xarm5/home" qpos="1.571 3.141 1.571 3.141 6.2830000000000004"/>
   </keyframe>
 </mujoco>

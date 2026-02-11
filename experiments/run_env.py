@@ -57,123 +57,47 @@ def main(args):
     env = RobotEnv(robot_client, control_rate_hz=args.hz, camera_dict=camera_clients)
 
     agent_cfg = {}
-    if args.bimanual:
-        if args.agent == "gello":
-            # dynamixel control box port map (to distinguish left and right gello)
-            right = "/dev/serial/by-id/usb-FTDI_USB__-__Serial_Converter_FT7WBG6A-if00-port0"
-            left = "/dev/serial/by-id/usb-FTDI_USB__-__Serial_Converter_FT7WBEIA-if00-port0"
-            agent_cfg = {
-                "_target_": "gello.agents.agent.BimanualAgent",
-                "agent_left": {
-                    "_target_": "gello.agents.gello_agent.GelloAgent",
-                    "port": left,
-                },
-                "agent_right": {
-                    "_target_": "gello.agents.gello_agent.GelloAgent",
-                    "port": right,
-                },
-            }
-        elif args.agent == "quest":
-            agent_cfg = {
-                "_target_": "gello.agents.agent.BimanualAgent",
-                "agent_left": {
-                    "_target_": "gello.agents.quest_agent.SingleArmQuestAgent",
-                    "robot_type": args.robot_type,
-                    "which_hand": "l",
-                },
-                "agent_right": {
-                    "_target_": "gello.agents.quest_agent.SingleArmQuestAgent",
-                    "robot_type": args.robot_type,
-                    "which_hand": "r",
-                },
-            }
-        elif args.agent == "spacemouse":
-            left_path = "/dev/hidraw0"
-            right_path = "/dev/hidraw1"
-            agent_cfg = {
-                "_target_": "gello.agents.agent.BimanualAgent",
-                "agent_left": {
-                    "_target_": "gello.agents.spacemouse_agent.SpacemouseAgent",
-                    "robot_type": args.robot_type,
-                    "device_path": left_path,
-                    "verbose": args.verbose,
-                },
-                "agent_right": {
-                    "_target_": "gello.agents.spacemouse_agent.SpacemouseAgent",
-                    "robot_type": args.robot_type,
-                    "device_path": right_path,
-                    "verbose": args.verbose,
-                    "invert_button": True,
-                },
-            }
-        else:
-            raise ValueError(f"Invalid agent name for bimanual: {args.agent}")
-
-        # System setup specific. This reset configuration works well on our setup. If you are mounting the robot
-        # differently, you need a separate reset joint configuration.
-        reset_joints_left = np.deg2rad([0, -90, -90, -90, 90, 0, 0])
-        reset_joints_right = np.deg2rad([0, -90, 90, -90, -90, 0, 0])
-        reset_joints = np.concatenate([reset_joints_left, reset_joints_right])
-        curr_joints = env.get_obs()["joint_positions"]
-        max_delta = (np.abs(curr_joints - reset_joints)).max()
-        steps = min(int(max_delta / 0.01), 100)
-
-        for jnt in np.linspace(curr_joints, reset_joints, steps):
-            env.step(jnt)
-    else:
-        if args.agent == "gello":
-            gello_port = args.gello_port
-            if gello_port is None:
-                usb_ports = glob.glob("/dev/serial/by-id/*")
-                print(f"Found {len(usb_ports)} ports")
-                if len(usb_ports) > 0:
-                    gello_port = usb_ports[0]
-                    print(f"using port {gello_port}")
-                else:
-                    raise ValueError(
-                        "No gello port found, please specify one or plug in gello"
-                    )
-            agent_cfg = {
-                "_target_": "gello.agents.gello_agent.GelloAgent",
-                "port": gello_port,
-                "start_joints": args.start_joints,
-            }
-            if args.start_joints is None:
-                reset_joints = np.deg2rad(
-                    [0, -90, 90, -90, -90, 0, 0]
-                )  # Change this to your own reset joints
+    if args.agent == "gello":
+        gello_port = args.gello_port
+        if gello_port is None:
+            usb_ports = glob.glob("/dev/serial/by-id/*")
+            print(f"Found {len(usb_ports)} ports")
+            if len(usb_ports) > 0:
+                gello_port = usb_ports[0]
+                print(f"using port {gello_port}")
             else:
-                reset_joints = np.array(args.start_joints)
-
-            curr_joints = env.get_obs()["joint_positions"]
-            if reset_joints.shape == curr_joints.shape:
-                max_delta = (np.abs(curr_joints - reset_joints)).max()
-                steps = min(int(max_delta / 0.01), 100)
-
-                for jnt in np.linspace(curr_joints, reset_joints, steps):
-                    env.step(jnt)
-                    time.sleep(0.001)
-        elif args.agent == "quest":
-            agent_cfg = {
-                "_target_": "gello.agents.quest_agent.SingleArmQuestAgent",
-                "robot_type": args.robot_type,
-                "which_hand": "l",
-            }
-        elif args.agent == "spacemouse":
-            agent_cfg = {
-                "_target_": "gello.agents.spacemouse_agent.SpacemouseAgent",
-                "robot_type": args.robot_type,
-                "verbose": args.verbose,
-            }
-        elif args.agent == "dummy" or args.agent == "none":
-            agent_cfg = {
-                "_target_": "gello.agents.agent.DummyAgent",
-                "num_dofs": robot_client.num_dofs(),
-            }
-        elif args.agent == "policy":
-            raise NotImplementedError("add your imitation policy here if there is one")
+                raise ValueError(
+                    "No gello port found, please specify one or plug in gello"
+                )
+        agent_cfg = {
+            "_target_": "gello.agents.gello_agent.GelloAgent",
+            "port": gello_port,
+            "start_joints": args.start_joints,
+        }
+        if args.start_joints is None:
+            reset_joints = np.deg2rad(
+                [0, -90, 90, -90, -90, 0]
+            )  # Change this to your own reset joints
         else:
-            raise ValueError("Invalid agent name")
+            reset_joints = np.array(args.start_joints)
+
+        curr_joints = env.get_obs()["joint_positions"]
+        if reset_joints.shape == curr_joints.shape:
+            max_delta = (np.abs(curr_joints - reset_joints)).max()
+            steps = min(int(max_delta / 0.01), 100)
+
+            for jnt in np.linspace(curr_joints, reset_joints, steps):
+                env.step(jnt)
+                time.sleep(0.001)
+    elif args.agent == "dummy" or args.agent == "none":
+        agent_cfg = {
+            "_target_": "gello.agents.agent.DummyAgent",
+            "num_dofs": robot_client.num_dofs(),
+        }
+    elif args.agent == "policy":
+        raise NotImplementedError("add your imitation policy here if there is one")
+    else:
+        raise ValueError("Invalid agent name")
 
     agent = instantiate_from_dict(agent_cfg)
     # going to start position
@@ -185,7 +109,7 @@ def main(args):
     abs_deltas = np.abs(start_pos - joints)
     id_max_joint_delta = np.argmax(abs_deltas)
 
-    max_joint_delta = 0.8
+    max_joint_delta = 1000 #0.8
     if abs_deltas[id_max_joint_delta] > max_joint_delta:
         id_mask = abs_deltas > max_joint_delta
         print()
@@ -220,7 +144,8 @@ def main(args):
     obs = env.get_obs()
     joints = obs["joint_positions"]
     action = agent.act(obs)
-    if (action - joints > 0.5).any():
+    # 0.5
+    if (action - joints > 1110.5).any():
         print("Action is too big")
 
         # print which joints are too big
@@ -240,7 +165,7 @@ def main(args):
         )
 
     run_control_loop(env, agent, save_interface, use_colors=True)
-
+    
 
 if __name__ == "__main__":
     main(tyro.cli(Args))
