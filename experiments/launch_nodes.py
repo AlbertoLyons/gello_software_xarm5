@@ -44,6 +44,9 @@ def launch_robot_server(args: Args):
         if args.robot == "xarm":
             from gello.robots.xarm_robot import XArmRobot
             robot = XArmRobot(ip=args.robot_ip)
+        elif args.robot == "xarm_no_arm":
+            from gello.robots.xarm_robot_no_arm import XArmRobot_NoArm
+            robot = XArmRobot_NoArm(ip=args.robot_ip)
         else:
             raise NotImplementedError(
                 f"Robot {args.robot} not implemented, choose one of: sim_ur, xarm, none"
@@ -51,6 +54,7 @@ def launch_robot_server(args: Args):
         server = ZMQServerRobot(robot, port=port, host=args.hostname)
         print(f"Starting robot server on port {port}")
         server.serve()
+
 
 
 def main(args):

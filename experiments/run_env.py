@@ -2,7 +2,7 @@ import glob
 import time
 from dataclasses import dataclass
 from typing import Optional, Tuple
-
+from pathlib import Path
 import numpy as np
 import tyro
 
@@ -34,9 +34,13 @@ class Args:
     gello_port: Optional[str] = None
     mock: bool = False
     use_save_interface: bool = False
-    data_dir: str = "~/bc_data"
+    data_dir: Path = (
+            Path(__file__).parent.parent / "gello/data"
+        )
     bimanual: bool = False
     verbose: bool = False
+    
+    gripper: bool = False
 
     def __post_init__(self):
         if self.start_joints is not None:
@@ -45,7 +49,7 @@ class Args:
 
 def main(args):
     if args.mock:
-        robot_client = PrintRobot(8, dont_print=True)
+        robot_client = PrintRobot(5, dont_print=True)
         camera_clients = {}
     else:
         camera_clients = {
@@ -76,7 +80,7 @@ def main(args):
         }
         if args.start_joints is None:
             reset_joints = np.deg2rad(
-                [0, -90, 90, -90, -90, 0]
+                [4.7, 0, -122, 134, 0]
             )  # Change this to your own reset joints
         else:
             reset_joints = np.array(args.start_joints)
@@ -104,7 +108,7 @@ def main(args):
     print("Going to start position")
     start_pos = agent.act(env.get_obs())
     obs = env.get_obs()
-    joints = obs["joint_positions"]
+    joints = obs["joint_positions"][:5]
 
     abs_deltas = np.abs(start_pos - joints)
     id_max_joint_delta = np.argmax(abs_deltas)
@@ -134,7 +138,7 @@ def main(args):
     for _ in range(25):
         obs = env.get_obs()
         command_joints = agent.act(obs)
-        current_joints = obs["joint_positions"]
+        current_joints = obs["joint_positions"][:5]
         delta = command_joints - current_joints
         max_joint_delta = np.abs(delta).max()
         if max_joint_delta > max_delta:

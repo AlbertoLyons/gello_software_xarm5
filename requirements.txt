@@ -19,3 +19,7 @@ xarm
 xarm-python-sdk
 numpy-quaternion
 termcolor
+matplotlib
+natsort
+mediapy
+transforms3d
