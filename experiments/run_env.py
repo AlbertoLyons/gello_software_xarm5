@@ -80,7 +80,7 @@ def main(args):
         }
         if args.start_joints is None:
             reset_joints = np.deg2rad(
-                [4.7, 0, -122, 134, 0]
+                [0, -90, 90, -90, -90]
             )  # Change this to your own reset joints
         else:
             reset_joints = np.array(args.start_joints)

@@ -79,7 +79,6 @@ def get_act_min_max(source_dir: str) -> Tuple[np.ndarray, np.ndarray]:
             assert scale_max is not None
             scale_min = np.minimum(scale_min, curr_scale_factor)
             scale_max = np.maximum(scale_min, curr_scale_factor)
-
     assert scale_min is not None
     assert scale_max is not None
     return scale_min, scale_max

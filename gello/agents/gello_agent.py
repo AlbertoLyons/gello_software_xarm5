@@ -48,11 +48,11 @@ PORT_CONFIG_MAP: Dict[str, DynamixelRobotConfig] = {
     "/dev/serial/by-id/usb-1a86_USB_Single_Serial_5AF6000708-if00": DynamixelRobotConfig(
         joint_ids=(1, 2, 3, 4, 5),
         joint_offsets=(
-            1.571,
+            7.854,
             3.142,
+            -1.571,
             1.571,
-            3.142,
-            4.712,
+            9.425,
             
         ),
         joint_signs=(1, 1, -1, 1, 1),

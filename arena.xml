@@ -101,7 +101,7 @@
     </body>
   </worldbody>
   <actuator>
-    <general name="xarm5/act1" class="xarm5/size1" ctrlrange="-3.1415000000000002 3.1415000000000002" joint="xarm5/joint1"/>
+    <general name="xarm5/act1" class="xarm5/size1" joint="xarm5/joint1"/>
     <general name="xarm5/act2" class="xarm5/size1" ctrlrange="-2.0590000000000002 2.0943999999999998" joint="xarm5/joint2"/>
     <general name="xarm5/act3" class="xarm5/size2" ctrlrange="-3.927 0.19198000000000001" joint="xarm5/joint3"/>
     <general name="xarm5/act4" class="xarm5/size3" ctrlrange="-1.6929700000000001 3.1415899999999999" joint="xarm5/joint4"/>
