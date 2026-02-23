@@ -114,7 +114,7 @@ class SaveInterface:
         if state == "start":
             dt_time = datetime.datetime.now()
             self.save_path = (
-                self.data_dir / self.agent_name / dt_time.strftime("%m%d_%H%M%S")
+                self.data_dir / dt_time.strftime("%m%d_%H%M%S")
             )
             self.save_path.mkdir(parents=True, exist_ok=True)
             print(f"Saving to {self.save_path}")

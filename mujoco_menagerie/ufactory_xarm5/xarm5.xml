@@ -104,18 +104,12 @@
               <body name="link4" pos="0.049 -0.055 -0.219">
               <inertial pos="0.07047 -0.11575 0.012" quat="0.422108 0.852026 -0.126025 0.282832" mass="1.7269"
                 diaginertia="0.00657137 0.00647948 0.00186763"/>
-              <joint name="joint4"
-              range="-0.19198 3.927"
-              class="size3"
-              axis="0 0 -1"
-              pos= "0 0.02 0.25" 
-              />
               <geom mesh="link4"/>
 
                 <body name="link5" pos="0.03 0.028 0">
                 <inertial pos="-0.00032 0.01604 -0.026" quat="0.999311 -0.0304457 0.000577067 0.0212082" mass="1.3203"
                   diaginertia="0.00534729 0.00499076 0.0013489"/>
-                <joint name="joint5" 
+                <joint name="joint4" 
                 class="size3"
                 axis="0 1 0" 
                 pos="-0.03 -0.015 0.037"
@@ -125,7 +119,7 @@
                   <body name="link6" pos="0.046 0 -0.056">
                   <inertial pos="0.06469 0.03278 0.02141" quat="-0.217672 0.772419 0.16258 0.574069" mass="1.325"
                     diaginertia="0.00245421 0.00221646 0.00107273"/>
-                  <joint name="joint6" 
+                  <joint name="joint5" 
                   range="-1.69297 3.14159" 
                   class="size3"
                   axis="0 0 -1"
@@ -215,14 +209,13 @@
     <general name="act1" joint="joint1" class="size1" ctrlrange="-3.1415 3.1415"/>
     <general name="act2" joint="joint2" class="size1" ctrlrange="-2.059 2.0944"/>
     <general name="act3" joint="joint3" class="size2" ctrlrange="-3.927 0.19198"/> 
-    <general name="act4" joint="joint4" class="size2" ctrlrange="-0.19198 3.927"/>
-    <general name="act5" joint="joint5" class="size3" ctrlrange="-1.69297 3.14159"/>
-    
+    <general name="act4" joint="joint4" class="size3" ctrlrange="-1.69297 3.14159"/>
+    <general name="act5" joint="joint5" class="size3"/>
     <general name="gripper" tendon="split" forcerange="-50 50" ctrlrange="0 255" biastype="affine" gainprm="0.333" biasprm="0 -100 -10"/>
 </actuator>
 
   <keyframe>
-    <key name="home" qpos="0 0 0 0 0 0 0" ctrl="0 0 0 0 0 0"/>
+    <key name="home" qpos="0 0 0 0 0 0 " ctrl="0 0 0 0 0 "/>
   </keyframe>
   
 </mujoco>

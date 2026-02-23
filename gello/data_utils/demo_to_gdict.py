@@ -3,7 +3,7 @@ import os
 import pickle
 import shutil
 from dataclasses import dataclass
-from typing import Tuple
+from typing import Tuple, List, Union
 
 import numpy as np
 import tyro
@@ -16,7 +16,7 @@ np.set_printoptions(precision=3, suppress=True)
 
 import mediapy as mp
 from gdict.data import DictArray, GDict
-from simple_bc.utils.visualization_utils import make_grid_video_from_numpy
+#from simple_bc.utils.visualization_utils import make_grid_video_from_numpy
 
 from gello.data_utils.conversion_utils import preproc_obs
 
@@ -79,7 +79,6 @@ def get_act_min_max(source_dir: str) -> Tuple[np.ndarray, np.ndarray]:
             assert scale_max is not None
             scale_min = np.minimum(scale_min, curr_scale_factor)
             scale_max = np.maximum(scale_min, curr_scale_factor)
-
     assert scale_min is not None
     assert scale_max is not None
     return scale_min, scale_max
@@ -343,3 +342,51 @@ def main(args):
 
 if __name__ == "__main__":
     main(tyro.cli(Args))
+
+
+def make_grid_video_from_numpy(
+    video_list: List[np.ndarray], 
+    cols: int, 
+    output_path: str, 
+    fps: int = 30
+):
+    """
+    Toma una lista de videos (numpy arrays), los organiza en una cuadrícula
+    y los exporta como un archivo mp4.
+    """
+    if not video_list:
+        return
+
+    # 1. Asegurarnos de que todos los videos tengan la misma longitud (frames)
+    # Tomamos la longitud del video más corto para evitar errores
+    min_frames = min(v.shape[0] for v in video_list)
+    
+    # 2. Determinar filas necesarias
+    num_videos = len(video_list)
+    rows = int(np.ceil(num_videos / cols))
+    
+    # Obtener dimensiones (asumiendo que todos tienen el mismo H, W, C)
+    _, h, w, c = video_list[0].shape
+    
+    grid_frames = []
+    
+    for t in range(min_frames):
+        # Extraer el frame 't' de cada video
+        frames_t = [v[t] for v in video_list]
+        
+        # Rellenar con frames negros si no completan la última fila de la cuadrícula
+        while len(frames_t) < rows * cols:
+            frames_t.append(np.zeros((h, w, c), dtype=np.uint8))
+        
+        # Organizar en filas y luego concatenar
+        grid_rows = []
+        for r in range(rows):
+            row_concat = np.concatenate(frames_t[r * cols : (r + 1) * cols], axis=1)
+            grid_rows.append(row_concat)
+        
+        full_grid = np.concatenate(grid_rows, axis=0)
+        grid_frames.append(full_grid)
+    
+    # 3. Guardar el video final
+    mp.write_video(output_path, np.array(grid_frames), fps=fps)
+    print(f"Video guardado en: {output_path}")
