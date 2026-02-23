@@ -1,5 +1,6 @@
 from dataclasses import dataclass
 from multiprocessing import Process
+import multiprocessing
 
 import tyro
 
@@ -37,4 +38,5 @@ def main(args):
 
 
 if __name__ == "__main__":
+    multiprocessing.set_start_method('spawn', force=True)
     main(tyro.cli(Args))

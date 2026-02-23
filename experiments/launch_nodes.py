@@ -49,7 +49,7 @@ def launch_robot_server(args: Args):
             robot = XArmRobot_NoArm(ip=args.robot_ip)
         else:
             raise NotImplementedError(
-                f"Robot {args.robot} not implemented, choose one of: sim_ur, xarm, none"
+                f"Robot {args.robot} not implemented, choose one of: xarm, xarm_no_arm, sim_xarm, sim_xarm_no_arm"
             )
         server = ZMQServerRobot(robot, port=port, host=args.hostname)
         print(f"Starting robot server on port {port}")
