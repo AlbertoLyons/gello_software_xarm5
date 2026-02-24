@@ -1,54 +1,30 @@
+# Importación de bibliotecas necesarias
 import glob
 import os
 import pickle
 import shutil
 from dataclasses import dataclass
-from typing import Tuple, List, Union
-
+from typing import Tuple, List
 import numpy as np
 import tyro
 from natsort import natsorted
 from tqdm import tqdm
 
 from gello.data_utils.plot_utils import plot_in_grid
-
 np.set_printoptions(precision=3, suppress=True)
 
 import mediapy as mp
 from gdict.data import DictArray, GDict
-#from simple_bc.utils.visualization_utils import make_grid_video_from_numpy
-
 from gello.data_utils.conversion_utils import preproc_obs
 
-# def get_act_bounds(source_dir: str) -> np.ndarray:
-#     pkls = natsorted(
-#         glob.glob(os.path.join(source_dir, "**/*.pkl"), recursive=True), reverse=True
-#     )
-#     if len(pkls) <= 30:
-#         print(f"Skipping {source_dir} because it has less than 30 frames.")
-#         return None
-#     pkls = pkls[:-5]
-#
-#     scale_factor = None
-#     for pkl in pkls:
-#         try:
-#             with open(pkl, "rb") as f:
-#                 demo = pickle.load(f)
-#         except Exception as e:
-#             print(f"Skipping {pkl} because it is corrupted.")
-#             print(f"Error: {e}")
-#             raise Exception("Corrupted pkl")
-#
-#         requested_control = demo.pop("control")
-#         curr_scale_factor = np.abs(requested_control)
-#         if scale_factor is None:
-#             scale_factor = curr_scale_factor
-#         else:
-#             scale_factor = np.maximum(scale_factor, curr_scale_factor)
-#     assert scale_factor is not None
-#     return scale_factor
+"""
+demo_to_gdict.py
+Script para procesar demostraciones recolectadas en archivos .pkl y convertirlas a formato HDF5.
+El script calcula factores de escala y bias para normalizar las acciones, preprocesa las observaciones
+de las cámaras y genera visualizaciones automáticas de los datos procesados.
+"""
 
-
+# Función que calcula los valores mínimos y máximos de las acciones (control) en un directorio de demostración.
 def get_act_min_max(source_dir: str) -> Tuple[np.ndarray, np.ndarray]:
     pkls = natsorted(
         glob.glob(os.path.join(source_dir, "**/*.pkl"), recursive=True), reverse=True
@@ -78,12 +54,17 @@ def get_act_min_max(source_dir: str) -> Tuple[np.ndarray, np.ndarray]:
         else:
             assert scale_max is not None
             scale_min = np.minimum(scale_min, curr_scale_factor)
-            scale_max = np.maximum(scale_min, curr_scale_factor)
+            scale_max = np.maximum(scale_max, curr_scale_factor)
     assert scale_min is not None
     assert scale_max is not None
     return scale_min, scale_max
 
-
+"""
+Función que procesa una única demostración.
+1. Convierte los archivos .pkl en un objeto DictArray y luego a HDF5.
+2. Normaliza las acciones utilizando los factores de escala y bias proporcionados.
+3. Genera y guarda videos (RGB/Depth) y gráficas de estado/acción para inspección visual.
+"""
 def convert_single_demo(
     source_dir,
     i,
@@ -95,13 +76,6 @@ def convert_single_demo(
     scale_factor,
     bias_factor,
 ):
-    """
-    1. converts the demo into a gdict
-    2. visualizes the RGB of the demo
-    3. visualizes the state + action space of the demo
-    4. returns these to be collated by the caller.
-    """
-
     pkls = natsorted(
         glob.glob(os.path.join(source_dir, "**/*.pkl"), recursive=True), reverse=True
     )
@@ -110,8 +84,6 @@ def convert_single_demo(
     if len(pkls) <= 30:
         return 0
 
-    # go through the demo in reverse order.
-    # remove the first few frames because they are not useful.
     pkls = pkls[:-5]
 
     for pkl in pkls:
@@ -125,12 +97,12 @@ def convert_single_demo(
 
         obs = preproc_obs(demo)
         action = demo.pop("control")
-        action = (action - bias_factor) / scale_factor  # normalize between -1 and 1
+        action = (action - bias_factor) / scale_factor  # Normalización entre -1 y 1
 
         curr_ts["obs"] = obs
         curr_ts["actions"] = action
-        curr_ts["dones"] = np.zeros(1)  # random fill
-        curr_ts["episode_dones"] = np.zeros(1)  # random fill
+        curr_ts["dones"] = np.zeros(1)  
+        curr_ts["episode_dones"] = np.zeros(1)
 
         curr_ts_wrapped = dict()
         curr_ts_wrapped[f"traj_{i}"] = curr_ts
@@ -139,13 +111,12 @@ def convert_single_demo(
     demo_dict = DictArray.stack(demo_stack)
     GDict.to_hdf5(demo_dict, os.path.join(traj_output_dir + "", f"traj_{i}.h5"))
 
-    ## save the base videos
-    # save the base rgb and depth videos
+    # Guardado de videos de la cámara base (RGB y profundidad)
     all_rgbs = demo_dict[f"traj_{i}"]["obs"]["rgb"][:, 1].transpose([0, 2, 3, 1])
     all_rgbs = all_rgbs.astype(np.uint8)
     _, H, W, _ = all_rgbs.shape
     all_depths = demo_dict[f"traj_{i}"]["obs"]["depth"][:, 1].reshape([-1, H, W])
-    all_depths = all_depths / 5.0  # scale to 0-1
+    all_depths = all_depths / 5.0  
 
     mp.write_video(
         os.path.join(rgb_output_dir + "", f"traj_{i}_rgb_base.mp4"), all_rgbs, fps=30
@@ -156,13 +127,12 @@ def convert_single_demo(
         fps=30,
     )
 
-    ## save the wrist videos
-    # save the rgb and depth videos
+    # Guardado de videos de la cámara de la muñeca (Wrist)
     all_rgbs = demo_dict[f"traj_{i}"]["obs"]["rgb"][:, 0].transpose([0, 2, 3, 1])
     all_rgbs = all_rgbs.astype(np.uint8)
     _, H, W, _ = all_rgbs.shape
     all_depths = demo_dict[f"traj_{i}"]["obs"]["depth"][:, 0].reshape([-1, H, W])
-    all_depths = all_depths / 2.0  # scale to 0-1
+    all_depths = all_depths / 2.0  
 
     mp.write_video(
         os.path.join(rgb_output_dir + "", f"traj_{i}_rgb_wrist.mp4"), all_rgbs, fps=30
@@ -172,11 +142,10 @@ def convert_single_demo(
         all_depths,
         fps=30,
     )
-    ##
 
     all_depths = np.tile(all_depths[..., None], [1, 1, 1, 3])
 
-    # save the state and action plots
+    # Generación de gráficas de estados y acciones
     all_actions = demo_dict[f"traj_{i}"]["actions"]
     all_states = demo_dict[f"traj_{i}"]["obs"]["state"]
 
@@ -192,13 +161,12 @@ def convert_single_demo(
 
     return all_rgbs, all_depths, all_actions, all_states
 
-
 @dataclass
 class Args:
     source_dir: str
     vis: bool = True
 
-
+# Función principal que gestiona la conversión masiva de demostraciones.
 def main(args):
     subdirs = natsorted(glob.glob(os.path.join(args.source_dir, "*/"), recursive=True))
 
@@ -232,6 +200,7 @@ def main(args):
     val_indices = np.random.choice(len(subdirs), size=val_size, replace=False)
     val_indices = set(val_indices)
 
+    # Cálculo de factores de escala para normalización global
     print("Computing scale factors")
     pbar = tqdm(range(len(subdirs)))
     min_scale_factor = None
@@ -252,13 +221,14 @@ def main(args):
             print(f"Error: {e}")
             print(f"Skipping {subdirs[i]}")
             continue
+            
     bias_factor = (min_scale_factor + max_scale_factor) / 2.0
     scale_factor = (max_scale_factor - min_scale_factor) / 2.0
     scale_factor[scale_factor == 0] = 1.0
+    
     print("*" * 80)
     print(f"scale factors: {scale_factor}")
     print(f"bias factor: {bias_factor}")
-    # make it into a copy pasteable string where the numbers are separated by commas
     scale_factor_str = ", ".join([f"{x}" for x in scale_factor])
     print(f"scale_factor = np.array([{scale_factor_str}])")
     bias_factor_str = ", ".join([f"{x}" for x in bias_factor])
@@ -266,12 +236,12 @@ def main(args):
     print("*" * 80)
 
     tot = 0
-
     all_rgbs = []
     all_depths = []
     all_actions = []
     all_states = []
 
+    # Configuración de carpetas de visualización
     vis_dir = os.path.join(output_dir, "vis")
     state_output_dir = os.path.join(vis_dir, "state")
     action_output_dir = os.path.join(vis_dir, "action")
@@ -289,6 +259,7 @@ def main(args):
     if not os.path.isdir(depth_output_dir):
         os.mkdir(depth_output_dir)
 
+    # Fase de conversión y guardado de trayectorias
     pbar = tqdm(range(len(subdirs)))
     for i in pbar:
         out_dir = val_dir if i in val_indices else train_dir
@@ -322,6 +293,7 @@ def main(args):
         f"Finished converting all demos to {output_dir}! (num demos: {tot} / {len(subdirs)})"
     )
 
+    # Generación de visualizaciones agregadas si se solicita
     if args.vis:
         if len(all_rgbs) > 0:
             print(f"Visualizing all demos...")
@@ -339,46 +311,30 @@ def main(args):
 
     exit(0)
 
-
 if __name__ == "__main__":
     main(tyro.cli(Args))
 
-
+# Función que toma una lista de videos, los organiza en una cuadrícula y exporta el archivo mp4 resultante.
 def make_grid_video_from_numpy(
     video_list: List[np.ndarray], 
     cols: int, 
     output_path: str, 
     fps: int = 30
 ):
-    """
-    Toma una lista de videos (numpy arrays), los organiza en una cuadrícula
-    y los exporta como un archivo mp4.
-    """
     if not video_list:
         return
 
-    # 1. Asegurarnos de que todos los videos tengan la misma longitud (frames)
-    # Tomamos la longitud del video más corto para evitar errores
     min_frames = min(v.shape[0] for v in video_list)
-    
-    # 2. Determinar filas necesarias
     num_videos = len(video_list)
     rows = int(np.ceil(num_videos / cols))
-    
-    # Obtener dimensiones (asumiendo que todos tienen el mismo H, W, C)
     _, h, w, c = video_list[0].shape
     
     grid_frames = []
-    
     for t in range(min_frames):
-        # Extraer el frame 't' de cada video
         frames_t = [v[t] for v in video_list]
-        
-        # Rellenar con frames negros si no completan la última fila de la cuadrícula
         while len(frames_t) < rows * cols:
             frames_t.append(np.zeros((h, w, c), dtype=np.uint8))
         
-        # Organizar en filas y luego concatenar
         grid_rows = []
         for r in range(rows):
             row_concat = np.concatenate(frames_t[r * cols : (r + 1) * cols], axis=1)
@@ -387,6 +343,5 @@ def make_grid_video_from_numpy(
         full_grid = np.concatenate(grid_rows, axis=0)
         grid_frames.append(full_grid)
     
-    # 3. Guardar el video final
     mp.write_video(output_path, np.array(grid_frames), fps=fps)
-    print(f"Video guardado en: {output_path}")
+    print(f"Video saved in: {output_path}")

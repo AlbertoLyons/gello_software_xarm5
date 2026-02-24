@@ -99,7 +99,9 @@ def main(args):
         }
         # En caso de que no se proporcionen las posiciones iniciales de las articulaciones, se define una posición de reinicio predeterminada para el robot.
         if args.start_joints is None:
-            reset_joints = np.deg2rad([-180, 0, -180, 0, -270])
+            reset_joints = np.deg2rad([-176, 37, -127, 0, 85])
+
+            #reset_joints = np.deg2rad([-180, 0, -180, 0, -270])
         else:
         # Se convierten las posiciones iniciales de las articulaciones en un array de numpy.
             reset_joints = np.array(args.start_joints)
@@ -143,12 +145,12 @@ def main(args):
     id_max_joint_delta = np.argmax(abs_deltas)
     # Se define un umbral máximo para la diferencia entre las posiciones iniciales proporcionadas por el agente y las posiciones actuales del robot.
     # TODO: cambiar
-    max_joint_delta = 1000 #0.8
+    max_joint_delta = 1.5 #0.8
     # En caso de que se supere ese umbral no realizara el movimiento y se imprimira el mensaje:
     if abs_deltas[id_max_joint_delta] > max_joint_delta:
         # Se obtiene el índice de todas las articulaciones que superan el umbral
         id_mask = abs_deltas > max_joint_delta
-        print()
+        print("Start pos for agent is too big")
         # Se imprime un mensaje indicando que la posición inicial del agente es demasiado grande, junto con los detalles
         ids = np.arange(len(id_mask))[id_mask]
         for i, delta, joint, current_j in zip(

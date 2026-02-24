@@ -1,15 +1,23 @@
+# Importación de librerías necesarias
 import pickle
 import threading
 from typing import Any, Dict
-
 import numpy as np
 import zmq
-
+# Importación de la clase Robot desde la carpeta GELLO
 from gello.robots.robot import Robot
-
+# Puerto por defecto para el servidor ZMQ del robot
 DEFAULT_ROBOT_PORT = 6000
 
-
+"""
+Clase ZMQServerRobot
+Esta clase representa un servidor ZMQ para el robot seguidor. 
+Permite servir el estado del robot a través de ZMQ y manejar solicitudes de clientes.
+Args:
+    - robot: El robot seguidor que se va a servir.
+    - port: El puerto en el que el servidor ZMQ escuchará las solicitudes
+    - host: La dirección IP en la que el servidor ZMQ escuchará las solicitudes
+"""
 class ZMQServerRobot:
     def __init__(
         self,
@@ -26,17 +34,16 @@ class ZMQServerRobot:
         self._timout_message = f"Timeout in Robot Server, Robot: {robot}"
         self._socket.bind(addr)
         self._stop_event = threading.Event()
-
+    # Servir el estado del robot a través de ZMQ
     def serve(self) -> None:
         """Serve the leader robot state over ZMQ."""
-        self._socket.setsockopt(zmq.RCVTIMEO, 1000)  # Set timeout to 1000 ms
+        self._socket.setsockopt(zmq.RCVTIMEO, 1000) # Establece tiempo de espera a 1000 ms
         while not self._stop_event.is_set():
             try:
-                # Wait for next request from client
+                # Espera la siguiente solicitud del cliente
                 message = self._socket.recv()
                 request = pickle.loads(message)
-
-                # Call the appropriate method based on the request
+                # Llama el método apropiado según la solicitud
                 method = request.get("method")
                 args = request.get("args", {})
                 result: Any
@@ -57,40 +64,30 @@ class ZMQServerRobot:
 
                 self._socket.send(pickle.dumps(result))
             except zmq.Again:
-                # Timeout occurred - don't spam the console
+                # Ocurrió un Timeout. No se debe de interactuar con la consola, o se debe de terminarlo
                 pass
-
+    # Señal para detener el servidor
     def stop(self) -> None:
-        """Signal the server to stop serving."""
         self._stop_event.set()
-
-
+"""
+Clase ZMQClientRobot
+Representa un ZMQ cliente para el robot líder.
+"""
 class ZMQClientRobot(Robot):
-    """A class representing a ZMQ client for a leader robot."""
 
     def __init__(self, port: int = DEFAULT_ROBOT_PORT, host: str = "127.0.0.1"):
         self._context = zmq.Context()
         self._socket = self._context.socket(zmq.REQ)
         self._socket.connect(f"tcp://{host}:{port}")
-
+    # Obtiene el número de joints y lo regresa
     def num_dofs(self) -> int:
-        """Get the number of joints in the robot.
-
-        Returns:
-            int: The number of joints in the robot.
-        """
         request = {"method": "num_dofs"}
         send_message = pickle.dumps(request)
         self._socket.send(send_message)
         result = pickle.loads(self._socket.recv())
         return result
-
+    # Obtiene el estado actual del líder y lo regresa
     def get_joint_state(self) -> np.ndarray:
-        """Get the current state of the leader robot.
-
-        Returns:
-            T: The current state of the leader robot.
-        """
         request = {"method": "get_joint_state"}
         send_message = pickle.dumps(request)
         try:
@@ -101,13 +98,8 @@ class ZMQClientRobot(Robot):
             return result
         except zmq.Again:
             raise RuntimeError("ZMQ timeout - robot may be disconnected")
-
+    # Comanda el líder robot hacía el estado dado
     def command_joint_state(self, joint_state: np.ndarray) -> None:
-        """Command the leader robot to the given state.
-
-        Args:
-            joint_state (T): The state to command the leader robot to.
-        """
         request = {
             "method": "command_joint_state",
             "args": {"joint_state": joint_state},
@@ -116,13 +108,8 @@ class ZMQClientRobot(Robot):
         self._socket.send(send_message)
         result = pickle.loads(self._socket.recv())
         return result
-
+    # Obtiene la observación actual del robot líder y lo regresa
     def get_observations(self) -> Dict[str, np.ndarray]:
-        """Get the current observations of the leader robot.
-
-        Returns:
-            Dict[str, np.ndarray]: The current observations of the leader robot.
-        """
         request = {"method": "get_observations"}
         send_message = pickle.dumps(request)
         try:
@@ -133,8 +120,7 @@ class ZMQClientRobot(Robot):
             return result
         except zmq.Again:
             raise RuntimeError("ZMQ timeout - robot may be disconnected")
-
+    # Cierra el socket ZMQ y el contexto
     def close(self) -> None:
-        """Close the ZMQ socket and context."""
         self._socket.close()
         self._context.term()

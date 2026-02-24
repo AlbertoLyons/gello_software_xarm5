@@ -1,34 +1,32 @@
+# Importación de liberías necesarias
 from typing import Any, Dict, Protocol
-
 import numpy as np
 
-
+"""
+agent.py
+Script que define la clase base Agent y un dummyAgent.
+"""
+"""
+Clase agente que define la interfaz para los agentes que interactúan con el entorno.
+Parametros:
+    obs: observación del entorno.
+"""
 class Agent(Protocol):
     def act(self, obs: Dict[str, Any]) -> np.ndarray:
-        """Returns an action given an observation.
-
-        Args:
-            obs: observation from the environment.
-
-        Returns:
-            action: action to take on the environment.
-        """
         raise NotImplementedError
 
-
+"""
+Clase DummyAgent que implementa la interfaz Agent y devuelve una acción de ceros.
+Parametros:
+    num_dofs: número de grados de libertad del robot.
+    obs: observación del entorno.
+"""
 class DummyAgent(Agent):
     def __init__(self, num_dofs: int):
         self.num_dofs = num_dofs
-
+    # Función que devuelve una acción de ceros para cada grado de libertad
     def act(self, obs: Dict[str, Any]) -> np.ndarray:
         return np.zeros(self.num_dofs)
-
-
-class BimanualAgent(Agent):
-    def __init__(self, agent_left: Agent, agent_right: Agent):
-        self.agent_left = agent_left
-        self.agent_right = agent_right
-
     def act(self, obs: Dict[str, Any]) -> np.ndarray:
         left_obs = {}
         right_obs = {}
