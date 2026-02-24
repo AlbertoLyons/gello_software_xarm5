@@ -2,6 +2,8 @@
 from dataclasses import dataclass
 from pathlib import Path
 import tyro
+import psutil
+import socket
 # Importación de la clase ZMQServerRobot desde el módulo robot_node
 from gello.zmq_core.robot_node import ZMQServerRobot
 """
@@ -24,6 +26,8 @@ class Args:
 Función que lanza el servidor del robot dependiendo del tipo de robot especificado en los argumentos.
 """
 def launch_robot_server(args: Args):
+    # Antes de lanzar el servidor, se asegura de que no haya ningún proceso utilizando el puerto especificado
+    kill_process_on_port(6001)
     port = args.robot_port
     # Lanza un servidor del robot xArm5 simulado utilizando MuJoCo
     if args.robot == "sim_xarm":
@@ -72,9 +76,20 @@ def launch_robot_server(args: Args):
         print(f"Starting robot server on port {port}")
         server.serve()
 
+# Función que cierra cualquier proceso que esté utilizando el puerto especificado, para evitar conflictos al lanzar el servidor del robot
+def kill_process_on_port(port):
+    for proc in psutil.process_iter(['pid', 'name']):
+        try:
+            for conn in psutil.net_connections(kind='inet'):
+                if conn.laddr.port == port:
+                    print(f"Killing process {proc.info['name']} (PID: {proc.info['pid']}) using port {port}")
+                    proc.terminate()
+                    proc.wait(timeout=3)
+        except (psutil.NoSuchProcess, psutil.AccessDenied, psutil.ZombieProcess):
+            pass
+
 def main(args):
     launch_robot_server(args)
-
 
 if __name__ == "__main__":
     main(tyro.cli(Args))
