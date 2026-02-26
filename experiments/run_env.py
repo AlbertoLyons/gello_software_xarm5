@@ -145,7 +145,7 @@ def main(args):
     id_max_joint_delta = np.argmax(abs_deltas)
     # Se define un umbral máximo para la diferencia entre las posiciones iniciales proporcionadas por el agente y las posiciones actuales del robot.
     # TODO: cambiar
-    max_joint_delta = 1.5 #0.8
+    max_joint_delta = 113 #0.8
     # En caso de que se supere ese umbral no realizara el movimiento y se imprimira el mensaje:
     if abs_deltas[id_max_joint_delta] > max_joint_delta:
         # Se obtiene el índice de todas las articulaciones que superan el umbral

@@ -173,7 +173,7 @@ class MujocoRobotServer:
 
     # Recibe y valida los comandos de articulaciones para aplicarlos en la simulación.
     def command_joint_state(self, joint_state: np.ndarray) -> None:
-        assert len(joint_state) == self._num_joints, f"Se esperaban {self._num_joints} joints."
+        assert len(joint_state) == self._num_joints, f"Expected {self._num_joints} joints."
         
         if self._has_gripper:
             _joint_state = joint_state.copy()

@@ -40,8 +40,8 @@
         <general gainprm="1000" biasprm="0 -1000 -100" forcerange="-30 30"/>
       </default>
       <default class="size3">
-        <joint damping="2"/>
-        <general gainprm="800" biasprm="0 -800 -80" forcerange="-20 20"/>
+        <joint damping="0.1" frictionloss="0.01" armature="0.005"/>
+        <general gainprm="3000" biasprm="0 -3000 -20" forcerange="-100 100"/>
       </default>
       <default class="spring_link">
         <joint range="0 0.85" stiffness="0.05" springref="2.62" damping="0.00125"/>
@@ -85,7 +85,6 @@
           <body name="link2" pos="-0.006 0.045 0.0685">
             <joint name="joint2" 
             pos="0.0065 0 0.049" 
-            range="-2.059 2.0944" 
             class="size1" 
             axis="0 1 0" 
             />
@@ -120,10 +119,10 @@
                   <inertial pos="0.06469 0.03278 0.02141" quat="-0.217672 0.772419 0.16258 0.574069" mass="1.325"
                     diaginertia="0.00245421 0.00221646 0.00107273"/>
                   <joint name="joint5" 
-                  range="-1.69297 3.14159" 
                   class="size3"
                   axis="0 0 -1"
                   pos="0.0003 -0.007 0" 
+                  limited="false"
                   />
                   <geom mesh="link6"/>
                   </body>
@@ -136,11 +135,11 @@
   </worldbody>
 
 <actuator>
-    <general name="act1" joint="joint1" class="size1" />
-    <general name="act2" joint="joint2" class="size1" ctrlrange="-2.059 2.0944"/>
-    <general name="act3" joint="joint3" class="size2" ctrlrange="-3.927 0.19198"/> 
-    <general name="act4" joint="joint4" class="size3" ctrlrange="-1.69297 3.14159"/>
-    <general name="act5" joint="joint5" class="size3"/>
+    <general name="act1" joint="joint1" class="size1" ctrlrange="-100 100"/>
+    <general name="act2" joint="joint2" class="size1" ctrlrange="-2.0595 2.0944"/>
+    <general name="act3" joint="joint3" class="size2" ctrlrange="-3.9270 0.19198"/> 
+    <general name="act4" joint="joint4" class="size3" ctrlrange="-1.6930 3.1416"/>
+    <general name="act5" joint="joint5" class="size3" ctrlrange="-100 100"/>
 </actuator>
 
   <keyframe>

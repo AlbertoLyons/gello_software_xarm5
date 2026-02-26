@@ -126,13 +126,13 @@ class XArmRobot(Robot):
     GRIPPER_OPEN = 800
     GRIPPER_CLOSE = 0
     #  MAX_DELTA = 0.2
-    # Define la cantidad de grados de libertad (DoFs) del robot, que en este caso es 5 (sin gripper).
+    # Define la cantidad de grados de libertad (DoFs) del robot, que en este caso es 6 con gripper.
 
     DEFAULT_MAX_DELTA = 0.05
 
     def num_dofs(self) -> int:
         return 6
-    # Regresa el estado de las articulaciones del robot como un vector numpy de 5 elementos (j1, j2, j3, j4, j5).
+    # Regresa el estado de las articulaciones del robot como un vector numpy de 6 elementos (j1, j2, j3, j4, j5, gripper).
     def get_joint_state(self) -> np.ndarray:
         state = self.get_state()
         gripper = state.gripper_pos()
