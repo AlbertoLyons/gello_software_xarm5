@@ -1,6 +1,6 @@
 # Este repositorio es un fork de [GELLO: General, Low-Cost, and Intuitive Teleoperation Framework](https://github.com/wuphilipp/gello_software)
 <p align="center">
-  <img src="imgs/gello.gif" />
+  <img src="imgs/gello_portrait.gif" />
 </p>
 
 El presente brazo robótico y repositorio, está completamente dedicado a su aplicación al brazo de Ufactory xArm5. Este brazo de **teleoperación orientado a las técnicas de aprendizaje por imitación** fué realizado en la **Universidad Católica del Norte**
