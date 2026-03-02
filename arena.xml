@@ -82,55 +82,15 @@
               <geom name="xarm5//unnamed_geom_3" mesh="xarm5/link3"/>
               <body name="xarm5/link4" pos="0.049000000000000002 -0.055 -0.219">
                 <inertial pos="0.070470000000000005 -0.11575000000000001 0.012" quat="0.42210799999999998 0.85202599999999995 -0.126025 0.28283199999999997" mass="1.7269000000000001" diaginertia="0.00657137 0.0064794800000000001 0.0018676299999999999"/>
-                <joint name="xarm5/joint4" class="xarm5/size3" pos="0 0.02 0.25" axis="0 0 -1" range="-0.19198000000000001 3.927"/>
                 <geom name="xarm5//unnamed_geom_4" mesh="xarm5/link4"/>
                 <body name="xarm5/link5" pos="0.029999999999999999 0.028000000000000001 0">
                   <inertial pos="-0.00032000000000000003 0.016039999999999999 -0.025999999999999999" quat="0.99931099999999995 -0.030445699999999999 0.00057706700000000001 0.0212082" mass="1.3203" diaginertia="0.0053472900000000002 0.0049907600000000003 0.0013489000000000001"/>
-                  <joint name="xarm5/joint5" class="xarm5/size3" pos="-0.029999999999999999 -0.014999999999999999 0.036999999999999998" axis="0 1 0"/>
+                  <joint name="xarm5/joint4" class="xarm5/size3" pos="-0.029999999999999999 -0.014999999999999999 0.036999999999999998" axis="0 1 0"/>
                   <geom name="xarm5//unnamed_geom_5" mesh="xarm5/link5"/>
                   <body name="xarm5/link6" pos="0.045999999999999999 0 -0.056000000000000001">
                     <inertial pos="0.064689999999999998 0.032779999999999997 0.021409999999999998" quat="-0.217672 0.77241899999999997 0.16258 0.57406900000000005" mass="1.325" diaginertia="0.0024542100000000001 0.00221646 0.00107273"/>
-                    <joint name="xarm5/joint6" class="xarm5/size3" pos="0.00029999999999999997 -0.0070000000000000001 0" axis="0 0 -1" range="-1.6929700000000001 3.1415899999999999"/>
+                    <joint name="xarm5/joint5" class="xarm5/size3" pos="0.00029999999999999997 -0.0070000000000000001 0" axis="0 0 -1" range="-1.6929700000000001 3.1415899999999999"/>
                     <geom name="xarm5//unnamed_geom_6" mesh="xarm5/link6"/>
-                    <body name="xarm5/xarm_gripper_base_link" pos="0 -0.0070000000000000001 0" euler="0 3.1415899999999999 0">
-                      <inertial pos="-0.00065488999999999999 -0.0018496999999999999 0.048028000000000001" quat="0.99740300000000004 -0.071751200000000001 -0.0061836 0.000477479" mass="0.54156000000000004" diaginertia="0.00047109300000000001 0.000332307 0.000254799"/>
-                      <geom name="xarm5//unnamed_geom_7" mesh="xarm5/base_link"/>
-                      <body name="xarm5/left_outer_knuckle" pos="0 0.035000000000000003 0.059097999999999998">
-                        <inertial pos="0 0.021558999999999998 0.015181" quat="0.47788999999999998 0.87841999999999998 0 0" mass="0.033618000000000002" diaginertia="1.9111e-05 1.7908900000000001e-05 1.90167e-06"/>
-                        <joint name="xarm5/left_driver_joint" class="xarm5/driver" axis="1 0 0"/>
-                        <geom name="xarm5//unnamed_geom_8" material="xarm5/black" mesh="xarm5/left_outer_knuckle"/>
-                        <body name="xarm5/left_finger" pos="0 0.035465000000000003 0.042039">
-                          <inertial pos="0 -0.016413000000000001 0.029257999999999999" quat="0.69763399999999998 0.115353 -0.115353 0.69763399999999998" mass="0.048304" diaginertia="1.8803700000000001e-05 1.7493e-05 3.5679199999999999e-06"/>
-                          <joint name="xarm5/left_finger_joint" class="xarm5/follower" axis="-1 0 0"/>
-                          <geom name="xarm5//unnamed_geom_9" class="xarm5/visual" material="xarm5/black" mesh="xarm5/left_finger"/>
-                          <geom name="xarm5/left_finger_pad_1" class="xarm5/pad_box1" pos="0 -0.024003 0.032000000000000001"/>
-                          <geom name="xarm5/left_finger_pad_2" class="xarm5/pad_box2" pos="0 -0.024003 0.050000000000000003"/>
-                        </body>
-                      </body>
-                      <body name="xarm5/left_inner_knuckle" pos="0 0.02 0.074097999999999997">
-                        <inertial pos="1.8660100000000001e-06 0.022046799999999998 0.0261335" quat="0.66413900000000003 -0.242732 0.24271300000000001 0.66414600000000001" mass="0.023012600000000001" diaginertia="8.3421600000000001e-06 6.0948999999999999e-06 2.7560099999999998e-06"/>
-                        <joint name="xarm5/left_inner_knuckle_joint" class="xarm5/spring_link" axis="1 0 0"/>
-                        <geom name="xarm5//unnamed_geom_12" material="xarm5/black" mesh="xarm5/left_inner_knuckle"/>
-                      </body>
-                      <body name="xarm5/right_outer_knuckle" pos="0 -0.035000000000000003 0.059097999999999998">
-                        <inertial pos="0 -0.021558999999999998 0.015181" quat="0.87841999999999998 0.47788999999999998 0 0" mass="0.033618000000000002" diaginertia="1.9111e-05 1.7908900000000001e-05 1.90167e-06"/>
-                        <joint name="xarm5/right_driver_joint" class="xarm5/driver" axis="-1 0 0"/>
-                        <geom name="xarm5//unnamed_geom_13" material="xarm5/black" mesh="xarm5/right_outer_knuckle"/>
-                        <body name="xarm5/right_finger" pos="0 -0.035465000000000003 0.042039">
-                          <inertial pos="0 0.016413000000000001 0.029257999999999999" quat="0.69763399999999998 -0.115356 0.115356 0.69763399999999998" mass="0.048304" diaginertia="1.8803800000000001e-05 1.7493e-05 3.5677900000000001e-06"/>
-                          <joint name="xarm5/right_finger_joint" class="xarm5/follower" axis="1 0 0"/>
-                          <geom name="xarm5//unnamed_geom_14" class="xarm5/visual" material="xarm5/black" mesh="xarm5/right_finger"/>
-                          <geom name="xarm5/right_finger_pad_1" class="xarm5/pad_box1" pos="0 0.024003 0.032000000000000001"/>
-                          <geom name="xarm5/right_finger_pad_2" class="xarm5/pad_box2" pos="0 0.024003 0.050000000000000003"/>
-                        </body>
-                      </body>
-                      <body name="xarm5/right_inner_knuckle" pos="0 -0.02 0.074097999999999997">
-                        <inertial pos="1.866e-06 -0.022047000000000001 0.026133" quat="0.66415000000000002 0.242702 -0.24272099999999999 0.66414399999999996" mass="0.023012999999999999" diaginertia="8.3420900000000003e-06 6.0948999999999999e-06 2.7560099999999998e-06"/>
-                        <joint name="xarm5/right_inner_knuckle_joint" class="xarm5/spring_link" axis="-1 0 0"/>
-                        <geom name="xarm5//unnamed_geom_17" material="xarm5/black" mesh="xarm5/right_inner_knuckle"/>
-                      </body>
-                      <site name="xarm5/link_tcp" pos="0 0 0.17199999999999999"/>
-                    </body>
                   </body>
                 </body>
               </body>
@@ -140,32 +100,14 @@
       </body>
     </body>
   </worldbody>
-  <contact>
-    <exclude name="xarm5//unnamed_contact_0" body1="xarm5/right_inner_knuckle" body2="xarm5/right_outer_knuckle"/>
-    <exclude name="xarm5//unnamed_contact_1" body1="xarm5/right_inner_knuckle" body2="xarm5/right_finger"/>
-    <exclude name="xarm5//unnamed_contact_2" body1="xarm5/left_inner_knuckle" body2="xarm5/left_outer_knuckle"/>
-    <exclude name="xarm5//unnamed_contact_3" body1="xarm5/left_inner_knuckle" body2="xarm5/left_finger"/>
-  </contact>
-  <equality>
-    <connect name="xarm5//unnamed_equality_0" class="xarm5/" solref="0.0050000000000000001 1" body1="xarm5/right_finger" body2="xarm5/right_inner_knuckle" anchor="0 0.014999999999999999 0.014999999999999999"/>
-    <connect name="xarm5//unnamed_equality_1" class="xarm5/" solref="0.0050000000000000001 1" body1="xarm5/left_finger" body2="xarm5/left_inner_knuckle" anchor="0 -0.014999999999999999 0.014999999999999999"/>
-    <joint name="xarm5//unnamed_equality_2" class="xarm5/" solref="0.0050000000000000001 1" joint1="xarm5/left_driver_joint" joint2="xarm5/right_driver_joint" polycoef="0 1 0 0 0"/>
-  </equality>
-  <tendon>
-    <fixed name="xarm5/split" class="xarm5/">
-      <joint joint="xarm5/right_driver_joint" coef="0.5"/>
-      <joint joint="xarm5/left_driver_joint" coef="0.5"/>
-    </fixed>
-  </tendon>
   <actuator>
-    <general name="xarm5/act1" class="xarm5/size1" ctrlrange="-3.1415000000000002 3.1415000000000002" joint="xarm5/joint1"/>
+    <general name="xarm5/act1" class="xarm5/size1" joint="xarm5/joint1"/>
     <general name="xarm5/act2" class="xarm5/size1" ctrlrange="-2.0590000000000002 2.0943999999999998" joint="xarm5/joint2"/>
     <general name="xarm5/act3" class="xarm5/size2" ctrlrange="-3.927 0.19198000000000001" joint="xarm5/joint3"/>
-    <general name="xarm5/act4" class="xarm5/size2" ctrlrange="-0.19198000000000001 3.927" joint="xarm5/joint4"/>
-    <general name="xarm5/act5" class="xarm5/size3" ctrlrange="-1.6929700000000001 3.1415899999999999" joint="xarm5/joint5"/>
-    <general name="xarm5/gripper" class="xarm5/" ctrlrange="0 255" forcerange="-50 50" tendon="xarm5/split" biastype="affine" gainprm="0.33300000000000002" biasprm="0 -100 -10"/>
+    <general name="xarm5/act4" class="xarm5/size3" ctrlrange="-1.6929700000000001 3.1415899999999999" joint="xarm5/joint4"/>
+    <general name="xarm5/act5" class="xarm5/size3" joint="xarm5/joint5"/>
   </actuator>
   <keyframe>
-    <key name="xarm5/home" qpos="0 0 0 0 0 0 0" ctrl="0 0 0 0 0 0"/>
+    <key name="xarm5/home" qpos="1.571 3.141 1.571 3.141 6.2830000000000004"/>
   </keyframe>
 </mujoco>

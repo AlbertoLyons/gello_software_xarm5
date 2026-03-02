@@ -1,6 +1,8 @@
 # keep each top level section alphabetical
 # keep each item within the sections alphabetical
 
+# Data training outputs
+gello/data/*
 # large files
 *.png
 *.gif
@@ -38,3 +40,6 @@ third_party/i2rt/
 
 # 3D Model Files
 *.stl
+!mujoco_menagerie/ufactory_xarm5/*.stl
+# Exclude the graphic viewer script from being ignored
+!gello/data/graphic_viewer.py

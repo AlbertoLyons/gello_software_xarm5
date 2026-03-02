@@ -447,16 +447,29 @@ class DynamixelDriver(DynamixelDriverProtocol):
         self._reading_thread.start()
 
     def _read_joint_states(self):
+        echo_size = 14 + len(self._ids)
         # Continuously read joint angles and velocities
         while not self._stop_thread.is_set():
-            time.sleep(0.001)
+            time.sleep(0.05)
             with self._lock:
                 _joint_angles = np.zeros(len(self._ids), dtype=int)
                 _velocities = np.zeros(len(self._ids), dtype=int)
-                dxl_comm_result = self._groupSyncRead.txRxPacket()
+                
+                self._portHandler.clearPort()
+                dxl_comm_result = self._groupSyncRead.txPacket()
                 if dxl_comm_result != COMM_SUCCESS:
-                    print(f"warning, comm failed: {dxl_comm_result}")
-                    continue
+                    print(f"warning TX, comm failed: {dxl_comm_result}")
+                    #continue
+                self._portHandler.readPort(echo_size)
+                dxl_comm_result = self._groupSyncRead.rxPacket()
+                if dxl_comm_result != COMM_SUCCESS:
+                    print(f"warning RX, comm failed: {dxl_comm_result}")
+                    #continue
+
+                #dxl_comm_result = self._groupSyncRead.txRxPacket()
+                #if dxl_comm_result != COMM_SUCCESS:
+                #    print(f"warning, comm failed: {dxl_comm_result}")
+                #    continue
                 for i, dxl_id in enumerate(self._ids):
                     # velocity
                     if self._groupSyncRead.isAvailable(

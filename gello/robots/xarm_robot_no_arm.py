@@ -1,15 +1,15 @@
+# Importación de librerías necesarias
 import dataclasses
 import threading
 import time
-from typing import Dict, Optional
-
+from typing import Dict
 import numpy as np
 from pyquaternion import Quaternion
-
+# Importación de la clase base Robot para definir la interfaz del robot simulado
 from gello.robots.robot import Robot
 """
-xarm_robot.py
-Script que define una clase de robot para controlar un brazo xArm con gripper.
+xarm_robot_no_arm.py
+Script que define una clase de robot para controlar un brazo xArm sin gripper.
 """
 """
 Función que convierte un cuaternión a una representación de ángulo de eje.
@@ -30,6 +30,7 @@ def _aa_from_quat(quat: np.ndarray) -> np.ndarray:
     axis = Q.axis
     aa = axis * angle
     return aa
+
 """
 Convierte una representación de ángulo de eje a un cuaternión.
 Args:
@@ -49,7 +50,7 @@ def _quat_from_aa(aa: np.ndarray) -> np.ndarray:
     return quat
 
 """
-Clase que representa un robot xArm con gripper, con control de posición en las articulaciones.
+Clase que representa un robot xArm sin gripper, con control de posición en las articulaciones.
 Implementa la interfaz de la clase base Robot, permitiendo obtener el estado del robot y enviar comandos de posición a las articulaciones.
 """
 @dataclasses.dataclass(frozen=True)
@@ -57,7 +58,6 @@ class RobotState:
     x: float
     y: float
     z: float
-    gripper: float
     j1: float
     j2: float
     j3: float
@@ -69,14 +69,12 @@ class RobotState:
     def from_robot(
         cartesian: np.ndarray,
         joints: np.ndarray,
-        gripper: float,
         aa: np.ndarray,
     ) -> "RobotState":
         return RobotState(
             cartesian[0],
             cartesian[1],
             cartesian[2],
-            gripper,
             joints[0],
             joints[1],
             joints[2],
@@ -93,9 +91,6 @@ class RobotState:
     # Regresa el estado de las articulaciones del robot como un vector numpy de 5 elementos (j1, j2, j3, j4, j5).
     def joints(self) -> np.ndarray:
         return np.array([self.j1, self.j2, self.j3, self.j4, self.j5])
-    # Regresa la posición del gripper, que es un valor normalizado entre 0 (abierto) y 1 (cerrado).
-    def gripper_pos(self) -> float:
-        return self.gripper
 """
 Clase de utilidad para controlar la frecuencia de actualización del robot, 
 asegurando que los comandos se envíen a intervalos regulares.
@@ -112,42 +107,28 @@ class Rate:
         now = time.time()
         passed = now - self.last
         remaining = duration - passed
-        assert passed >= 0
+        print("Passed: ", passed)
+        #assert passed >= 0
         if remaining > 0.0001:
             time.sleep(remaining)
         self.last = time.time()
 
 """
-Clase que representa el robot xArm con gripper, implementando la interfaz definida por la clase base Robot. 
-Esta clase maneja la conexión con el hardware del robot, el envío de comandos de posición a las articulaciones y la lectura del estado actual del robot.
+Clase que representa un robot xArm sin gripper, con control de posición en las articulaciones.
+Implementa la interfaz de la clase base Robot, permitiendo obtener el estado del robot y enviar comandos de posición a las articulaciones.
 """
-class XArmRobot(Robot):
-    # Define cuando el gripper está abierto y cerrado
-    GRIPPER_OPEN = 800
-    GRIPPER_CLOSE = 0
-    #  MAX_DELTA = 0.2
-    # Define la cantidad de grados de libertad (DoFs) del robot, que en este caso es 6 con gripper.
-
+class XArmRobot_NoArm(Robot):
+    # Define la cantidad de grados de libertad (DoFs) del robot, que en este caso es 5 (sin gripper).
     DEFAULT_MAX_DELTA = 0.05
-
     def num_dofs(self) -> int:
-        return 6
-    # Regresa el estado de las articulaciones del robot como un vector numpy de 6 elementos (j1, j2, j3, j4, j5, gripper).
+        return 5
+    # Regresa el estado de las articulaciones del robot como un vector numpy de 5 elementos (j1, j2, j3, j4, j5).
     def get_joint_state(self) -> np.ndarray:
         state = self.get_state()
-        gripper = state.gripper_pos()
-        all_dofs = np.concatenate([state.joints(), np.array([gripper])])
-        return all_dofs
+        return state.joints()
     # Recibe y valida los comandos de articulaciones para aplicarlos en el robot real.
     def command_joint_state(self, joint_state: np.ndarray) -> None:
-        if len(joint_state) == 5:
-            self.set_command(joint_state, None)
-        elif len(joint_state) == 6:
-            self.set_command(joint_state[:5], joint_state[5])
-        else:
-            raise ValueError(
-                f"Invalid joint state: {joint_state}, len={len(joint_state)}"
-            )
+        self.set_command(joint_state)
     # Detiene el robot y cierra la conexión con el hardware, asegurando que el hilo de control se termine correctamente.
     def stop(self):
         self.running = False
@@ -176,14 +157,12 @@ class XArmRobot(Robot):
 
         self._control_frequency = control_frequency
         self._clear_error_states()
-        self._set_gripper_position(self.GRIPPER_OPEN)
 
         self.last_state_lock = threading.Lock()
         self.target_command_lock = threading.Lock()
         self.last_state = self._update_last_state()
         self.target_command = {
             "joints": self.last_state.joints(),
-            "gripper": 0,
         }
         self.running = True
         self.command_thread = None
@@ -194,11 +173,10 @@ class XArmRobot(Robot):
         with self.last_state_lock:
             return self.last_state
     # Establece el comando de posición para las articulaciones del robot.
-    def set_command(self, joints: np.ndarray, gripper: Optional[float] = None) -> None:
+    def set_command(self, joints: np.ndarray) -> None:
         with self.target_command_lock:
             self.target_command = {
                 "joints": joints,
-                "gripper": gripper,
             }
     # Método interno para limpiar los estados de error del robot.
     def _clear_error_states(self):
@@ -206,43 +184,24 @@ class XArmRobot(Robot):
             return
         self.robot.clean_error()
         self.robot.clean_warn()
+        time.sleep(0.1)
         self.robot.motion_enable(True)
         time.sleep(1)
+        self.robot.set_mode(0)
+        time.sleep(1)
+        self.robot.set_state(0)
+        time.sleep(1)
         self.robot.set_mode(1)
+        time.sleep(1)
+        self.robot.set_state(0)
         time.sleep(1)
         self.robot.set_collision_sensitivity(0)
         time.sleep(1)
         self.robot.set_state(state=0)
         time.sleep(1)
-        self.robot.set_gripper_enable(True)
         time.sleep(1)
-        self.robot.set_gripper_mode(0)
         time.sleep(1)
-        self.robot.set_gripper_speed(3000)
         time.sleep(1)
-
-    def _get_gripper_pos(self) -> float:
-        if self.robot is None:
-            return 0.0
-        code, gripper_pos = self.robot.get_gripper_position()
-        while code != 0 or gripper_pos is None:
-            print(f"Error code {code} in get_gripper_position(). {gripper_pos}")
-            time.sleep(0.001)
-            code, gripper_pos = self.robot.get_gripper_position()
-            if code == 22:
-                self._clear_error_states()
-
-        normalized_gripper_pos = (gripper_pos - self.GRIPPER_OPEN) / (
-            self.GRIPPER_CLOSE - self.GRIPPER_OPEN
-        )
-        return normalized_gripper_pos
-
-    def _set_gripper_position(self, pos: int) -> None:
-        if self.robot is None:
-            return
-        self.robot.set_gripper_position(pos, wait=False)
-        # while self.robot.get_is_moving():
-        #     time.sleep(0.01)
     # Hilo dedicado para enviar comandos de posición al robot a una frecuencia constante.
     def _robot_thread(self):
         rate = Rate(
@@ -258,7 +217,6 @@ class XArmRobot(Robot):
                 joint_delta = np.array(
                     self.target_command["joints"] - self.last_state.joints()
                 )
-                gripper_command = self.target_command["gripper"]
 
             norm = np.linalg.norm(joint_delta)
             # Umbral para limitar el cambio en las articulaciones por paso, evitando movimientos bruscos o peligrosos.
@@ -272,12 +230,6 @@ class XArmRobot(Robot):
                 self.last_state.joints() + delta,
             )
 
-            if gripper_command is not None:
-                set_point = gripper_command
-                self._set_gripper_position(
-                    self.GRIPPER_OPEN
-                    + set_point * (self.GRIPPER_CLOSE - self.GRIPPER_OPEN)
-                )
             self.last_state = self._update_last_state()
 
             rate.sleep()
@@ -294,9 +246,8 @@ class XArmRobot(Robot):
     def _update_last_state(self) -> RobotState:
         with self.last_state_lock:
             if self.robot is None:
-                return RobotState(0, 0, 0, 0, 0, 0, 0, 0, 0, np.zeros(3))
+                return RobotState(0, 0, 0, 0, 0, 0, 0, 0, np.zeros(3))
 
-            gripper_pos = self._get_gripper_pos()
 
             code, servo_angle = self.robot.get_servo_angle(is_radian=True)
             while code != 0:
@@ -317,7 +268,6 @@ class XArmRobot(Robot):
             return RobotState.from_robot(
                 cart_pos,
                 servo_angle,
-                gripper_pos,
                 aa,
             )
     # Establece el comando de posición para las articulaciones del robot, enviando los comandos al hardware.
@@ -340,13 +290,12 @@ class XArmRobot(Robot):
             "joint_positions": joints,  # rotational joint + gripper state
             "joint_velocities": joints,
             "ee_pos_quat": pos_quat,
-            "gripper_position": np.array(state.gripper_pos()),
         }
 
 # Función de prueba para crear una instancia del robot, obtener su estado y luego detenerlo.
 def main():
     ip = "192.168.1.239"
-    robot = XArmRobot(ip)
+    robot = XArmRobot_NoArm(ip)
     import time
 
     time.sleep(1)

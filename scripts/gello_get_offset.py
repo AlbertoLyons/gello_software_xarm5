@@ -16,16 +16,16 @@ MENAGERIE_ROOT: Path = Path(__file__).parent / "third_party" / "mujoco_menagerie
 
 @dataclass
 class Args:
-    port: str = "/dev/ttyUSB0"
+    port: str = "/dev/serial/by-id/usb-1a86_USB_Single_Serial_5AF6000708-if00"
     """The port that GELLO is connected to."""
 
-    start_joints: Tuple[float, ...] = (0, 0, 0, 0, 0, 0)
+    start_joints: Tuple[float, ...] = (1.606, 1.468, -3.023, 1.593, -0.033)
     """The joint angles that the GELLO is placed in at (in radians)."""
 
-    joint_signs: Tuple[float, ...] = (1, 1, -1, 1, 1, 1)
+    joint_signs: Tuple[float, ...] = (1, 1, 1, 1, 1, 1)
     """The joint angles that the GELLO is placed in at (in radians)."""
 
-    gripper: bool = True
+    gripper: bool = False
     """Whether or not the gripper is attached."""
 
     def __post_init__(self):
