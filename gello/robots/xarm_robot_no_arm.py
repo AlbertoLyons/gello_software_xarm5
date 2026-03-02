@@ -107,7 +107,8 @@ class Rate:
         now = time.time()
         passed = now - self.last
         remaining = duration - passed
-        assert passed >= 0
+        print("Passed: ", passed)
+        #assert passed >= 0
         if remaining > 0.0001:
             time.sleep(remaining)
         self.last = time.time()

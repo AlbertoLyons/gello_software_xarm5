@@ -27,7 +27,7 @@ Función que lanza el servidor del robot dependiendo del tipo de robot especific
 """
 def launch_robot_server(args: Args):
     # Antes de lanzar el servidor, se asegura de que no haya ningún proceso utilizando el puerto especificado
-    kill_process_on_port(6001)
+    #kill_process_on_port(6001)
     port = args.robot_port
     # Lanza un servidor del robot xArm5 simulado utilizando MuJoCo
     if args.robot == "sim_xarm":
