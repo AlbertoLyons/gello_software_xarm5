@@ -39,6 +39,6 @@ third_party/i2rt/
 
 # 3D Model Files
 *.stl
-!mujoco_menagerie/ufactory_xarm5/*.stl
+!mujoco_menagerie/ufactory_xarm5/assets/*.stl
 # Exclude the graphic viewer script from being ignored
 !gello/data/graphic_viewer.py
