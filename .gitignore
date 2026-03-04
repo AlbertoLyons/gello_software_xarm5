@@ -5,7 +5,6 @@
 gello/data/*
 # large files
 *.png
-*.gif
 
 # mac
 *.DS_Store
