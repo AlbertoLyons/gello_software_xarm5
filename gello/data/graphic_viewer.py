@@ -5,7 +5,7 @@ import matplotlib.pyplot as plt
 import numpy as np
 
 # La carpeta donde se encuentran los archivos .pkl deben de estar en el mismo del script
-folder = "./0218_152448" 
+folder = "./0303_175829" 
 files = sorted([f for f in os.listdir(folder) if f.endswith('.pkl')])
 
 print(f"Processing {len(files)} files...")
