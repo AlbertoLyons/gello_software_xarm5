@@ -24,18 +24,8 @@ Parametros:
 class DummyAgent(Agent):
     def __init__(self, num_dofs: int):
         self.num_dofs = num_dofs
-    # Función que devuelve una acción de ceros para cada grado de libertad
+
     def act(self, obs: Dict[str, Any]) -> np.ndarray:
+        # Simplemente devolvemos ceros para las articulaciones que tenemos (5 en tu caso)
         return np.zeros(self.num_dofs)
-    def act(self, obs: Dict[str, Any]) -> np.ndarray:
-        left_obs = {}
-        right_obs = {}
-        for key, val in obs.items():
-            L = val.shape[0]
-            half_dim = L // 2
-            assert L == half_dim * 2, f"{key} must be even, something is wrong"
-            left_obs[key] = val[:half_dim]
-            right_obs[key] = val[half_dim:]
-        return np.concatenate(
-            [self.agent_left.act(left_obs), self.agent_right.act(right_obs)]
-        )
+        

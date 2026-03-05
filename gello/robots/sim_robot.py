@@ -217,29 +217,40 @@ class MujocoRobotServer:
     # Inicia el hilo ZMQ y el bucle de renderizado/física pasivo de MuJoCo.
     def serve(self) -> None:
         self._zmq_server_thread.start()
-        with mujoco.viewer.launch_passive(self._model, self._data) as viewer:
-            while viewer.is_running():
-                step_start = time.time()
+        try:
+            with mujoco.viewer.launch_passive(self._model, self._data) as viewer:
+                while viewer.is_running():
 
-                # Aplicación de control y paso de física
-                self._data.ctrl[:] = self._joint_cmd
-                mujoco.mj_step(self._model, self._data)
-                self._joint_state = self._data.qpos.copy()[: self._num_joints]
+                    message = f"\rSim time: {self._data.time:.2f} s. Press Ctrl+C to exit."
+                    print(message, end="", flush=True)
 
-                if self._print_joints:
-                    print(self._joint_state)
+                    step_start = time.time()
 
-                # Sincronización con el visualizador
-                with viewer.lock():
-                    # Alterna la visualización de puntos de contacto cada 2 segundos
-                    viewer.opt.flags[mujoco.mjtVisFlag.mjVIS_CONTACTPOINT] = int(self._data.time % 2)
+                    # Aplicación de control y paso de física
+                    self._data.ctrl[:] = self._joint_cmd
+                    mujoco.mj_step(self._model, self._data)
+                    self._joint_state = self._data.qpos.copy()[: self._num_joints]
 
-                viewer.sync()
+                    if self._print_joints:
+                        print(self._joint_state)
 
-                # Control de frecuencia de la simulación para mantener tiempo real aproximado
-                time_until_next_step = self._model.opt.timestep - (time.time() - step_start)
-                if time_until_next_step > 0:
-                    time.sleep(time_until_next_step)
+                    # Sincronización con el visualizador
+                    with viewer.lock():
+                        # Alterna la visualización de puntos de contacto cada 2 segundos
+                        viewer.opt.flags[mujoco.mjtVisFlag.mjVIS_CONTACTPOINT] = int(self._data.time % 2)
+
+                    viewer.sync()
+
+                    # Control de frecuencia de la simulación para mantener tiempo real aproximado
+                    time_until_next_step = self._model.opt.timestep - (time.time() - step_start)
+                    if time_until_next_step > 0:
+                        time.sleep(time_until_next_step)
+        except KeyboardInterrupt:
+            print("\nShutting down MujocoRobotServer...")
+        finally:
+            import os
+            print("Stopping ZMQ server...")
+            os._exit(0)
 
     def stop(self) -> None:
         self._zmq_server_thread.join()
