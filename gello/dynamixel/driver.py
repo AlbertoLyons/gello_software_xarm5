@@ -449,7 +449,7 @@ class DynamixelDriver(DynamixelDriverProtocol):
     def _read_joint_states(self):
         # Continuously read joint angles and velocities
         while not self._stop_thread.is_set():
-            time.sleep(0.05)
+            time.sleep(0.001)
             with self._lock:
                 _joint_angles = np.zeros(len(self._ids), dtype=int)
                 _velocities = np.zeros(len(self._ids), dtype=int)
