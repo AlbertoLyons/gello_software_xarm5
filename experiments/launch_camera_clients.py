@@ -47,10 +47,9 @@ def main(args):
             # Convierte la imagen de RGB a BGR para su visualización con OpenCV
             image_bgr = cv2.cvtColor(image, cv2.COLOR_RGB2BGR)
             # Aplica un mapa de colores a la imagen de profundidad para su visualización
-            depth_colormap = cv2.applyColorMap(
-                cv2.convertScaleAbs(depth, alpha=0.03), 
-                cv2.COLORMAP_JET
-            )
+            import numpy as np
+            depth_fix = np.squeeze(depth)
+            depth_colormap = cv2.applyColorMap(depth_fix, cv2.COLORMAP_JET)
             # Combina la imagen de la cámara y el mapa de colores de profundidad en una sola imagen para mostrar
             canvas = cv2.hconcat([image_bgr, depth_colormap])
             # Muestra la imagen combinada en la ventana correspondiente

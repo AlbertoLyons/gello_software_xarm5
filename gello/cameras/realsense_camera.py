@@ -39,32 +39,29 @@ class RealSenseCamera(CameraDriver):
         return f"RealSenseCamera(device_id={self._device_id})"
     # Incializa la clase con el ID del dispositivo y una opción para voltear la imagen (flip)
     def __init__(self, device_id: Optional[str] = None, flip: bool = False):
-        # Importa la librería pyrealsense2 para interactuar con las cámaras Realsense
         import pyrealsense2 as rs
-
+        import time
+        
         self._device_id = device_id
-        # En caso de que no se proporcione un ID de dispositivo
+        self._flip = flip
+        
+        self._pipeline = rs.pipeline()
+        config = rs.config()
+        self._colorizer = rs.colorizer() 
+
         if device_id is None:
-            # Se resetea todos los dispositivos conectados
             ctx = rs.context()
             devices = ctx.query_devices()
             for dev in devices:
                 dev.hardware_reset()
-
             time.sleep(2)
-            # Iniciaiza la cámara
-            self._pipeline = rs.pipeline()
-            config = rs.config()
-        # En caso contrario, inicia la cámara con el ID proporcionado
         else:
-            self._pipeline = rs.pipeline()
-            config = rs.config()
             config.enable_device(device_id)
-        # Establece el flujo de datos de la cámara para obtener imágenes de profundidad y color con una resolución de 640x480 a 30 fps
+
         config.enable_stream(rs.stream.depth, 640, 480, rs.format.z16, 30)
         config.enable_stream(rs.stream.color, 640, 480, rs.format.bgr8, 30)
+
         self._pipeline.start(config)
-        self._flip = flip
     """
     Lee un frame desde la cámara
     Args:
@@ -82,10 +79,15 @@ class RealSenseCamera(CameraDriver):
         import cv2
         # Espera a que se reciban los frames de la cámara
         frames = self._pipeline.wait_for_frames()
+        
         color_frame = frames.get_color_frame()
+        depth_frame = frames.get_depth_frame() # Frame original (datos)
+        
+        # Crea una versión coloreada para visualización
+        depth_colorized = self._colorizer.colorize(depth_frame)
+        depth_image = np.asanyarray(depth_colorized.get_data())
+        
         color_image = np.asanyarray(color_frame.get_data())
-        depth_frame = frames.get_depth_frame()
-        depth_image = np.asanyarray(depth_frame.get_data())
         # depth_image = cv2.convertScaleAbs(depth_image, alpha=0.03)
         # Si no se especifica un tamaño de imagen, se devuelve la imagen original
         if img_size is None:
