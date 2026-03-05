@@ -169,24 +169,30 @@ def run_control_loop(
     start_time = time.time()
     obs = env.get_obs()
     # Bucle principal de control
-    while True:
-        if print_timing:
-            num = time.time() - start_time
-            message = f"\rTime passed: {round(num, 2)}. Press 'Ctrl + C' in both terminals to quit          "
+    try:
+        while True:
+            if print_timing:
+                num = time.time() - start_time
+                message = f"\rTime passed: {round(num, 2)}. Press 'Ctrl + C' in both terminals to quit          "
 
-            if colors_available:
-                print(
-                    colored(message, color="white", attrs=["bold"]), end="", flush=True
-                )
-            else:
-                print(message, end="", flush=True)
+                if colors_available:
+                    print(
+                        colored(message, color="white", attrs=["bold"]), end="", flush=True
+                    )
+                else:
+                    print(message, end="", flush=True)
 
-        action = agent.act(obs)
+            action = agent.act(obs)
 
-        # Maneja el proceso de guardado utilizando la interfaz de guardado si está disponible
-        if save_interface is not None:
-            result = save_interface.update(obs, action)
-            if result == "quit":
-                break
-        # Ejecutar el paso del entorno con la acción actual y obtener las nuevas observaciones
-        obs = env.step(action)
+            # Maneja el proceso de guardado utilizando la interfaz de guardado si está disponible
+            if save_interface is not None:
+                result = save_interface.update(obs, action)
+                if result == "quit":
+                    break
+            # Ejecutar el paso del entorno con la acción actual y obtener las nuevas observaciones
+            obs = env.step(action)
+    except KeyboardInterrupt:
+        print("\nControl loop interrupted by user. Exiting.")
+    finally:
+        total_time = time.time() - start_time
+        print(f"\nTotal time: {round(total_time, 2)} seconds")

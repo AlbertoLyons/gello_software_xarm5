@@ -4,16 +4,18 @@ import os
 import pickle
 import shutil
 from dataclasses import dataclass
+import sys
 from typing import Tuple, List
 import numpy as np
 import tyro
 from natsort import natsorted
 from tqdm import tqdm
-
+import h5py
 from gello.data_utils.plot_utils import plot_in_grid
 np.set_printoptions(precision=3, suppress=True)
 
 import mediapy as mp
+sys.path.append(os.getcwd())
 from gdict.data import DictArray, GDict
 from gello.data_utils.conversion_utils import preproc_obs
 
@@ -23,7 +25,22 @@ Script para procesar demostraciones recolectadas en archivos .pkl y convertirlas
 El script calcula factores de escala y bias para normalizar las acciones, preprocesa las observaciones
 de las cámaras y genera visualizaciones automáticas de los datos procesados.
 """
+# Función auxiliar para guardar un diccionario anidado en formato HDF5.
+def save_dict_to_hdf5(dic, filename):
+    with h5py.File(filename, 'w') as h5file:
+        _recursively_save_dict_contents_to_group(h5file, '/', dic)
 
+def _recursively_save_dict_contents_to_group(h5file, path, dic):
+    for key, item in dic.items():
+        key = str(key)
+        if isinstance(item, dict):
+            _recursively_save_dict_contents_to_group(h5file, path + key + '/', item)
+        else:
+            data = np.array(item)
+            try:
+                h5file.create_dataset(path + key, data=data, compression="gzip")
+            except TypeError:
+                h5file.create_dataset(path + key, data=data)
 # Función que calcula los valores mínimos y máximos de las acciones (control) en un directorio de demostración.
 def get_act_min_max(source_dir: str) -> Tuple[np.ndarray, np.ndarray]:
     pkls = natsorted(
@@ -108,58 +125,79 @@ def convert_single_demo(
         curr_ts_wrapped[f"traj_{i}"] = curr_ts
         demo_stack = [curr_ts_wrapped] + demo_stack
 
-    demo_dict = DictArray.stack(demo_stack)
-    GDict.to_hdf5(demo_dict, os.path.join(traj_output_dir + "", f"traj_{i}.h5"))
+    keys = demo_stack[0][f"traj_{i}"].keys()
+    demo_dict = {
+        "actions": np.array([d[f"traj_{i}"]["actions"] for d in demo_stack], dtype=np.float32),
+        "dones": np.array([d[f"traj_{i}"]["dones"] for d in demo_stack], dtype=bool),
+        "episode_dones": np.array([d[f"traj_{i}"]["episode_dones"] for d in demo_stack], dtype=bool),
+    }
 
-    # Guardado de videos de la cámara base (RGB y profundidad)
-    all_rgbs = demo_dict[f"traj_{i}"]["obs"]["rgb"][:, 1].transpose([0, 2, 3, 1])
-    all_rgbs = all_rgbs.astype(np.uint8)
-    _, H, W, _ = all_rgbs.shape
-    all_depths = demo_dict[f"traj_{i}"]["obs"]["depth"][:, 1].reshape([-1, H, W])
-    all_depths = all_depths / 5.0  
+    # 2. Handle the 'obs' dictionary separately to ensure sub-keys are stacked correctly
+    obs_keys = demo_stack[0][f"traj_{i}"]["obs"].keys()
+    demo_dict["obs"] = {}
+    
+    for k in obs_keys:
+        # We force convert to a clean numpy array. 
+        # If this line fails, it means your .pkl files have inconsistent shapes for that key.
+        stacked_obs = np.stack([d[f"traj_{i}"]["obs"][k] for d in demo_stack])
+        demo_dict["obs"][k] = stacked_obs
+
+    # --- END OF REPLACEMENT ---
+
+    output_file = os.path.join(traj_output_dir, f"traj_{i}.h5")
+    save_dict_to_hdf5(demo_dict, output_file)
+    print(f"Saved trajectory {i} to {output_file}")
+    # Base Camera (Index 1)
+    all_rgbs_base = demo_dict["obs"]["rgb"][:, 1].transpose([0, 2, 3, 1])
+    all_rgbs_base = all_rgbs_base.astype(np.uint8)
+    _, H, W, _ = all_rgbs_base.shape
+    
+    all_depths_base = demo_dict["obs"]["depth"][:, 1].reshape([-1, H, W])
+    all_depths_base = all_depths_base / 5.0  
 
     mp.write_video(
-        os.path.join(rgb_output_dir + "", f"traj_{i}_rgb_base.mp4"), all_rgbs, fps=30
+        os.path.join(rgb_output_dir, f"traj_{i}_rgb_base.mp4"), all_rgbs_base, fps=30
     )
     mp.write_video(
-        os.path.join(depth_output_dir + "", f"traj_{i}_depth_base.mp4"),
-        all_depths,
+        os.path.join(depth_output_dir, f"traj_{i}_depth_base.mp4"),
+        all_depths_base,
         fps=30,
     )
 
-    # Guardado de videos de la cámara de la muñeca (Wrist)
-    all_rgbs = demo_dict[f"traj_{i}"]["obs"]["rgb"][:, 0].transpose([0, 2, 3, 1])
-    all_rgbs = all_rgbs.astype(np.uint8)
-    _, H, W, _ = all_rgbs.shape
-    all_depths = demo_dict[f"traj_{i}"]["obs"]["depth"][:, 0].reshape([-1, H, W])
-    all_depths = all_depths / 2.0  
+    # Wrist Camera (Index 0)
+    all_rgbs_wrist = demo_dict["obs"]["rgb"][:, 0].transpose([0, 2, 3, 1])
+    all_rgbs_wrist = all_rgbs_wrist.astype(np.uint8)
+    
+    all_depths_wrist = demo_dict["obs"]["depth"][:, 0].reshape([-1, H, W])
+    all_depths_wrist = all_depths_wrist / 2.0  
 
     mp.write_video(
-        os.path.join(rgb_output_dir + "", f"traj_{i}_rgb_wrist.mp4"), all_rgbs, fps=30
+        os.path.join(rgb_output_dir, f"traj_{i}_rgb_wrist.mp4"), all_rgbs_wrist, fps=30
     )
     mp.write_video(
-        os.path.join(depth_output_dir + "", f"traj_{i}_depth_wrist.mp4"),
-        all_depths,
+        os.path.join(depth_output_dir, f"traj_{i}_depth_wrist.mp4"),
+        all_depths_wrist,
         fps=30,
     )
 
-    all_depths = np.tile(all_depths[..., None], [1, 1, 1, 3])
-
-    # Generación de gráficas de estados y acciones
-    all_actions = demo_dict[f"traj_{i}"]["actions"]
-    all_states = demo_dict[f"traj_{i}"]["obs"]["state"]
+    # Prep for Return and Grids
+    all_actions = demo_dict["actions"]
+    all_states = demo_dict["obs"]["state"]
 
     curr_actions = all_actions.reshape([1, *all_actions.shape])
     curr_states = all_states.reshape([-1, *all_states.shape])
 
     plot_in_grid(
-        curr_actions, os.path.join(action_output_dir + "", f"traj_{i}_actions.png")
+        curr_actions, os.path.join(action_output_dir, f"traj_{i}_actions.png")
     )
     plot_in_grid(
-        curr_states, os.path.join(state_output_dir + "", f"traj_{i}_states.png")
+        curr_states, os.path.join(state_output_dir, f"traj_{i}_states.png")
     )
 
-    return all_rgbs, all_depths, all_actions, all_states
+    # To maintain consistency with the tile logic in your original snippet
+    all_depths_tiled = np.tile(all_depths_wrist[..., None], [1, 1, 1, 3])
+
+    return all_rgbs_wrist, all_depths_tiled, all_actions, all_states
 
 @dataclass
 class Args:
@@ -311,9 +349,6 @@ def main(args):
 
     exit(0)
 
-if __name__ == "__main__":
-    main(tyro.cli(Args))
-
 # Función que toma una lista de videos, los organiza en una cuadrícula y exporta el archivo mp4 resultante.
 def make_grid_video_from_numpy(
     video_list: List[np.ndarray], 
@@ -345,3 +380,6 @@ def make_grid_video_from_numpy(
     
     mp.write_video(output_path, np.array(grid_frames), fps=fps)
     print(f"Video saved in: {output_path}")
+
+if __name__ == "__main__":
+    main(tyro.cli(Args))

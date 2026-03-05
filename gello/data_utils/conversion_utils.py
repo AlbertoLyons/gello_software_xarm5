@@ -25,28 +25,60 @@ def to_numpy(array):
 
 # Función que realiza un recorte central cuadrado a un par de frames de RGB y profundidad.
 def center_crop(rgb_frame, depth_frame):
-    H, W = rgb_frame.shape[-2:]
+    # Aseguramos que rgb sea (C, H, W)
+    if rgb_frame.ndim == 2:
+        rgb_frame = rgb_frame[None, ...]
+    
+    C, H, W = rgb_frame.shape
     sq_size = min(H, W)
+    
+    start_h = (H - sq_size) // 2
+    start_w = (W - sq_size) // 2
 
-    # Recorte del cuadrado central
-    if H > W:
-        rgb_frame = rgb_frame[..., int((H - sq_size) / 2) : int((H + sq_size) / 2), :sq_size]
-        depth_frame = depth_frame[..., int((H - sq_size) / 2) : int((H + sq_size) / 2), :sq_size]
-    elif W < H:
-        rgb_frame = rgb_frame[..., :sq_size, int((W - sq_size) / 2) : int((W + sq_size) / 2)]
-        depth_frame = depth_frame[..., :sq_size, int((W - sq_size) / 2) : int((W + sq_size) / 2)]
+    rgb_cropped = rgb_frame[:, start_h : start_h + sq_size, start_w : start_w + sq_size]
+    
+    # Manejo de profundidad: si es (H, W) o (C, H, W)
+    if depth_frame.ndim == 3:
+        depth_cropped = depth_frame[:, start_h : start_h + sq_size, start_w : start_w + sq_size]
+    else:
+        depth_cropped = depth_frame[start_h : start_h + sq_size, start_w : start_w + sq_size]
+        # Forzamos a que siempre salga con un canal al menos (1, H, W)
+        depth_cropped = depth_cropped[None, ...]
 
-    return rgb_frame, depth_frame
+    return rgb_cropped, depth_cropped
 
 # Función que redimensiona las imágenes RGB y de profundidad a un tamaño cuadrado específico (por defecto 224x224).
 def resize(rgb, depth, size=224):
-    rgb = rgb.transpose([1, 2, 0])
-    rgb = cv2.resize(rgb, (size, size), interpolation=cv2.INTER_LINEAR)
-    rgb = rgb.transpose([2, 0, 1])
+    target_size = (int(size), int(size))
+    
+    if rgb.shape[0] < rgb.shape[1]:
+        rgb_hwc = np.transpose(rgb, (1, 2, 0))
+    else:
+        rgb_hwc = rgb
+    
+    rgb_res = cv2.resize(rgb_hwc, target_size, interpolation=cv2.INTER_LINEAR)
+    rgb_final = np.transpose(rgb_res, (2, 0, 1))
 
-    depth = cv2.resize(depth[0], (size, size), interpolation=cv2.INTER_LINEAR)
-    depth = depth.reshape([1, size, size])
-    return rgb, depth
+    # Asegurar que sea H, W, C para el resize
+    if depth.ndim == 2:
+        depth_hwc = depth[:, :, None]
+    elif depth.shape[0] < depth.shape[1]:
+        depth_hwc = np.transpose(depth, (1, 2, 0))
+    else:
+        depth_hwc = depth
+
+    #Si tiene 3 canales por el colorizador, colapsar a 1
+    if depth_hwc.shape[2] == 3:
+        depth_hwc = depth_hwc[:, :, 0:1]
+
+    depth_res = cv2.resize(depth_hwc, target_size, interpolation=cv2.INTER_LINEAR)
+
+    if depth_res.ndim == 2:
+        depth_final = depth_res[None, ...]
+    else:
+        depth_final = np.transpose(depth_res.reshape(size, size, 1), (2, 0, 1))
+
+    return rgb_final.astype(np.float32), depth_final.astype(np.float32)
 
 # Función que limpia el mapa de profundidad eliminando valores NaN e infinitos, y limitando los valores entre un rango mínimo y máximo.
 def filter_depth(depth, max_depth=2.0, min_depth=0.0):
@@ -62,45 +94,57 @@ Toma un diccionario con datos crudos del robot (RGB, profundidad, estados) y los
 def preproc_obs(
     demo: Dict[str, np.ndarray], joint_only: bool = True
 ) -> Dict[str, np.ndarray]:
-    # Obtención y normalización de canales de imagen (C, H, W)
-    rgb_wrist = demo.get(f"wrist_rgb").transpose([2, 0, 1]) * 1.0  # type: ignore
-    depth_wrist = demo.get(f"wrist_depth").transpose([2, 0, 1]) * 1.0  # type: ignore
-    rgb_base = demo.get("base_rgb").transpose([2, 0, 1]) * 1.0  # type: ignore
-    depth_base = demo.get("base_depth").transpose([2, 0, 1]) * 1.0  # type: ignore
+    
+    wrist_rgb_raw = demo.get("wrist_rgb")
+    wrist_depth_raw = demo.get("wrist_depth")
+    
+    if wrist_rgb_raw is not None:
+        rgb_wrist = wrist_rgb_raw.transpose([2, 0, 1]) * 1.0
+        depth_wrist = wrist_depth_raw.transpose([2, 0, 1]) * 1.0
+        
+        rgb_wrist, depth_wrist = resize(*center_crop(rgb_wrist, depth_wrist))
+        depth_wrist = filter_depth(depth_wrist)
+    else:
+        rgb_wrist = np.zeros((3, 224, 224), dtype=np.float32)
+        depth_wrist = np.zeros((1, 224, 224), dtype=np.float32)
 
-    # Aplicación de recorte central, redimensionamiento y filtrado de profundidad
-    rgb_wrist, depth_wrist = resize(*center_crop(rgb_wrist, depth_wrist))
-    rgb_base, depth_base = resize(*center_crop(rgb_base, depth_base))
-
-    depth_wrist = filter_depth(depth_wrist)
-    depth_base = filter_depth(depth_base)
+    rgb_base = np.zeros_like(rgb_wrist)
+    depth_base = np.zeros_like(depth_wrist)
 
     rgb = np.stack([rgb_wrist, rgb_base], axis=0)
     depth = np.stack([depth_wrist, depth_base], axis=0)
 
-    # Definición de matrices intrínsecas y de cámara (dummies por defecto)
-    dummy_cam = np.eye(4)
-    K = np.eye(3)
+    qpos = demo.get("joint_positions")
+    qvel = demo.get("joint_velocities")
+    ee_pos_quat = demo.get("ee_pos_quat")
+    gripper_pos = demo.get("gripper_position")
 
-    # Extracción de estados del robot
-    qpos, qvel, ee_pos_quat, gripper_pos = (
-        demo.get("joint_positions"),  # type: ignore
-        demo.get("joint_velocities"),  # type: ignore
-        demo.get("ee_pos_quat"),  # type: ignore
-        demo.get("gripper_position"),  # type: ignore
-    )
+    # En casos de que el gripper no exista
+    if gripper_pos is None:
+        gripper_pos = np.array([0.0], dtype=np.float32)
+    elif isinstance(gripper_pos, (float, int)):
+        gripper_pos = np.array([gripper_pos], dtype=np.float32)
+    elif hasattr(gripper_pos, 'ndim') and gripper_pos.ndim == 0:
+        gripper_pos = gripper_pos[None]
+
+    if qpos is None:
+        raise ValueError("Error: 'joint_positions' not found in the data.")
 
     if joint_only:
-        state: np.ndarray = qpos
+        state = qpos
     else:
-        state: np.ndarray = np.concatenate([qpos, qvel, ee_pos_quat, gripper_pos[None]])
+        parts = [qpos]
+        if qvel is not None: parts.append(qvel)
+        if ee_pos_quat is not None: parts.append(ee_pos_quat)
+        parts.append(gripper_pos)
+        state = np.concatenate(parts)
 
     return {
-        "rgb": rgb,
-        "depth": depth,
-        "camera_poses": dummy_cam,
-        "K_matrices": K,
-        "state": state,
+        "rgb": rgb.astype(np.uint8), 
+        "depth": depth.astype(np.float32),
+        "camera_poses": np.eye(4).astype(np.float32),
+        "K_matrices": np.eye(3).astype(np.float32), 
+        "state": state.astype(np.float32),
     }
 
 """
