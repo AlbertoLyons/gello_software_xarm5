@@ -78,8 +78,7 @@ class RobotEnv:
         observations["joint_positions"] = robot_obs["joint_positions"]
         observations["joint_velocities"] = robot_obs["joint_velocities"]
         observations["ee_pos_quat"] = robot_obs["ee_pos_quat"]
-        # TODO ojo
-        #observations["gripper_position"] = robot_obs["gripper_position"]
+        observations["gripper_position"] = robot_obs["gripper_position"]
         return observations
 
 def main() -> None:
