@@ -60,10 +60,11 @@ PORT_CONFIG_MAP: Dict[str, DynamixelRobotConfig] = {
             -1.571,
             3.142,
             3.142,
-            
         ),
         joint_signs=(1, 1, -1, 1, 1),
-        gripper_config=None,
+        #gripper_config=None
+        # Configuración del gripper que va en el siguiente orde: id del joint del gripper, grados en posición abierta, grados en posición cerrada.
+        gripper_config=(6, 17.0265625, -24.7734375),
     ),
 }
 """

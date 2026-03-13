@@ -137,8 +137,7 @@ def main(args):
     # Se obtiene la posición actual de las articulaciones del robot a través del entorno.
     obs = env.get_obs()
     # Se extraen las posiciones de las articulaciones relevantes (las primeras 5) del entorno para compararlas con la posición inicial proporcionada por el agente.
-    # TODO: Cambiar esto si el número de articulaciones relevantes cambia, o si se quiere comparar todas las articulaciones.
-    joints = obs["joint_positions"][:5]
+    joints = obs["joint_positions"]
     # Se calcula la diferencia absoluta entre las posiciones iniciales proporcionadas por el agente y las posiciones actuales de las articulaciones del robot.
     abs_deltas = np.abs(start_pos - joints)
     # Se identifica el índice de la articulación con la mayor diferencia entre la posición inicial proporcionada por el agente y la posición actual del robot.
@@ -177,8 +176,7 @@ def main(args):
         # Obtiene la acción del agente basada en la observación actual del entorno, que representa las posiciones de las articulaciones deseadas.
         command_joints = agent.act(obs)
         # Se extraen las posiciones actuales de las articulaciones relevantes del entorno para compararlas con las posiciones deseadas proporcionadas por el agente.
-        # TODO: cambiar
-        current_joints = obs["joint_positions"][:5]
+        current_joints = obs["joint_positions"]
         # Se calcula la diferencia entre las posiciones deseadas proporcionadas por el agente y las posiciones actuales de las articulaciones del robot.
         delta = command_joints - current_joints
         # Se calcula la máxima diferencia entre las posiciones deseadas y las posiciones actuales de las articulaciones.

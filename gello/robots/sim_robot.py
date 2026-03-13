@@ -140,8 +140,9 @@ class MujocoRobotServer:
         port: int = 5556,
         print_joints: bool = False,
     ):
-        self._has_gripper = gripper_xml_path is not None
+        #self._has_gripper = gripper_xml_path is not None
         arena = build_scene(xml_path, gripper_xml_path)
+        self._has_gripper = "gripper" in [a.name for a in arena.actuator.all_children()]
 
         # Extracción de assets (mallas/meshes) para cargar el modelo en MuJoCo
         assets: Dict[str, str] = {}
