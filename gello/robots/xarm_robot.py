@@ -105,6 +105,8 @@ class Rate:
     def __init__(self, *, duration):
         self.duration = duration
         self.last = time.time()
+        # Configuracion para gripper
+
     # Duerme el hilo actual hasta que haya pasado la duración especificada desde la última vez que se llamó a sleep().
     def sleep(self, duration=None) -> None:
         duration = self.duration if duration is None else duration
@@ -168,6 +170,9 @@ class XArmRobot(Robot):
         control_frequency: float = 50.0,
         max_delta: float = DEFAULT_MAX_DELTA,
     ):
+        self._gripper_counter = 0
+        self._cached_gripper_pos = 0.0
+        self._last_sent_gripper = -1.0
         print(ip)
         self.max_delta = max_delta
         # Importa la librería de control del xArm de Ufactory
@@ -273,11 +278,12 @@ class XArmRobot(Robot):
             )
 
             if gripper_command is not None:
-                set_point = gripper_command
-                self._set_gripper_position(
-                    self.GRIPPER_OPEN
-                    + set_point * (self.GRIPPER_CLOSE - self.GRIPPER_OPEN)
-                )
+                # Solo envía el comando si la diferencia es mayor al 2%
+                if abs(gripper_command - self._last_sent_gripper) > 0.02:
+                    set_point = gripper_command
+                    target_pos = self.GRIPPER_OPEN + set_point * (self.GRIPPER_CLOSE - self.GRIPPER_OPEN)
+                    self._set_gripper_position(int(target_pos))
+                    self._last_sent_gripper = gripper_command
             self.last_state = self._update_last_state()
 
             rate.sleep()
@@ -296,7 +302,12 @@ class XArmRobot(Robot):
             if self.robot is None:
                 return RobotState(0, 0, 0, 0, 0, 0, 0, 0, 0, np.zeros(3))
 
-            gripper_pos = self._get_gripper_pos()
+            self._gripper_counter += 1
+            if self._gripper_counter >= 10:
+                self._cached_gripper_pos = self._get_gripper_pos()
+                self._gripper_counter = 0
+        
+            gripper_pos = self._cached_gripper_pos
 
             code, servo_angle = self.robot.get_servo_angle(is_radian=True)
             while code != 0:
